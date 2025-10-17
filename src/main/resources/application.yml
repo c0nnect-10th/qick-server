@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: qick
+
+  datasource:
+    url: ${DB_URL:?DB_URL missing}
+    username: ${DB_USERNAME:?DB_USERNAME missing}
+    password: ${DB_PASSWORD:?DB_PASSWORD missing}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
