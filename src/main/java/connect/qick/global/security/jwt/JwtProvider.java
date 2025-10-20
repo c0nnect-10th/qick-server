@@ -3,6 +3,9 @@ package connect.qick.global.security.jwt;
 
 import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,18 @@ public class JwtProvider {
     public JwtProvider(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
         key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
+    }
+
+    public Jws<Claims> getClaims(String token) {
+        try {
+            return Jwts.parser().
+                    verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token);
+        }
+        catch (ExpiredJwtException e) {
+            throw new IllegalArgumentException("Expired token", e);
+        }
     }
 
     public String generateToken(TokenType tokenType, String email, String role, long expiration) {
