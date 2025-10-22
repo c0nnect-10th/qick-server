@@ -42,6 +42,9 @@ public class JwtProvider {
         catch (ExpiredJwtException e) {
             throw new IllegalArgumentException("Expired token", e);
         }
+        catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
     }
 
     public String generateToken(TokenType tokenType, String email, UserRole role, long expiration) {
