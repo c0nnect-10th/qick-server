@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import connect.qick.global.security.jwt.filter.JwtExceptionFilter;
 import connect.qick.global.security.jwt.filter.JwtFilter;
 import connect.qick.global.security.jwt.handler.CustomAccessDeniedHandler;
+import connect.qick.global.security.jwt.handler.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +44,11 @@ public class SecurityConfig {
   }
 
   @Bean
+  public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
+    return new CustomAuthenticationEntryPoint(objectMapper);
+  }
+
+  @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
@@ -63,6 +69,7 @@ public class SecurityConfig {
 
         .exceptionHandling(ex ->
               ex.accessDeniedHandler(customAccessDeniedHandler())
+              .authenticationEntryPoint(customAuthenticationEntryPoint())
         );
 
 
