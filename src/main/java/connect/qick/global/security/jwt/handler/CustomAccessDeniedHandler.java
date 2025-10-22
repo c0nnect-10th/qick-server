@@ -13,7 +13,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 
 import java.io.IOException;
 
-import static connect.qick.global.exception.status_code.CommonStatusCode.FORBIDDEN;
+import static connect.qick.domain.auth.exception.AuthStatusCode.ACCESS_DENIED;
 
 @RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
@@ -22,8 +22,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
-        HttpStatus status = FORBIDDEN.getHttpStatus();
-        ErrorResponse errorResponse = ErrorResponse.of(FORBIDDEN.getCode(), FORBIDDEN.getMessage());
+        HttpStatus status = ACCESS_DENIED.getHttpStatus();
+        ErrorResponse errorResponse = ErrorResponse.of(ACCESS_DENIED.getCode(), ACCESS_DENIED.getMessage());
         ApiResponse<Void> apiResponse = ApiResponse.error(status, errorResponse);
 
         response.setStatus(status.value());
