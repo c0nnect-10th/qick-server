@@ -33,7 +33,7 @@ public class JwtExtract {
         }
 
 //        return new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities())
-
+        return null; // 임시
     }
 
     public String extractToken(final String token) {

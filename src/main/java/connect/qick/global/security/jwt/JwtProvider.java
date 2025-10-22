@@ -1,6 +1,7 @@
 package connect.qick.global.security.jwt;
 
 
+import connect.qick.domain.user.enums.UserRole;
 import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
 import io.jsonwebtoken.Claims;
@@ -33,7 +34,7 @@ public class JwtProvider {
 
     public Jws<Claims> getClaims(String token) {
         try {
-            return Jwts.parser().
+            return Jwts.parser(). // parser 수정
                     verifyWith(key)
                     .build()
                     .parseSignedClaims(token);
@@ -43,7 +44,7 @@ public class JwtProvider {
         }
     }
 
-    public String generateToken(TokenType tokenType, String email, String role, long expiration) {
+    public String generateToken(TokenType tokenType, String email, UserRole role, long expiration) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .header()
@@ -51,18 +52,18 @@ public class JwtProvider {
                 .and()
                 .subject(email)
                 .claim("token_type", tokenType.name())
-                .claim("authority", role)
+                .claim("authority", role.getKey())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(expiration, ChronoUnit.MILLIS)))
                 .signWith(key, Jwts.SIG.HS256)
                 .compact();
     }
 
-    public String generateAccessToken(String email, String role) {
+    public String generateAccessToken(String email, UserRole role) {
         return generateToken(TokenType.ACCESS, email, role, jwtProperties.getAccessExpiration());
     }
 
-    public String generateRefreshToken(String email, String role) {
+    public String generateRefreshToken(String email, UserRole role) {
         return generateToken(TokenType.REFRESH, email, role, jwtProperties.getRefreshExpiration());
     }
 
