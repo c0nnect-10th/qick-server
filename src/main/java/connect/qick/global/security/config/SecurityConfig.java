@@ -1,6 +1,7 @@
 package connect.qick.global.security.config;
 
-import connect.qick.global.security.jwt.JwtProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import connect.qick.global.security.jwt.filter.JwtExceptionFilter;
 import connect.qick.global.security.jwt.filter.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -19,7 +22,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
+  private final JwtFilter jwtFilter;
+  private final ObjectMapper objectMapper;
+
+  @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+  @Bean
+    public JwtExceptionFilter jwtExceptionFilter() {
+    // Spring에 등록된 ObjectMapper는 LocalDateTime 직렬화를 할 수 있는 JavaTimeModule이 자동등록되어있음
+    return new JwtExceptionFilter(objectMapper);
+  }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,16 +46,17 @@ public class SecurityConfig {
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
 
-        .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(jwtExceptionFilter(), JwtFilter.class)
 
         .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/api/v1/auth/**", "/api/v1/user/join").permitAll()
+            .requestMatchers("/auth/**", "/api/v1/user/join").permitAll()
 
-                .anyRequest().authenticated()
+            .anyRequest().authenticated()
         );
-
 
 
     return http.build();
   }
+
 }
