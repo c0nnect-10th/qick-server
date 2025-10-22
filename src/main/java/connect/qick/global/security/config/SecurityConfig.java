@@ -3,6 +3,7 @@ package connect.qick.global.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import connect.qick.global.security.jwt.filter.JwtExceptionFilter;
 import connect.qick.global.security.jwt.filter.JwtFilter;
+import connect.qick.global.security.jwt.handler.CustomAccessDeniedHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,11 @@ public class SecurityConfig {
   }
 
   @Bean
+  public CustomAccessDeniedHandler customAccessDeniedHandler() {
+    return new CustomAccessDeniedHandler(objectMapper);
+  }
+
+  @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
         .csrf(AbstractHttpConfigurer::disable)
@@ -53,6 +59,10 @@ public class SecurityConfig {
             .requestMatchers("/auth/**", "/api/v1/user/join").permitAll()
 
             .anyRequest().authenticated()
+        )
+
+        .exceptionHandling(ex ->
+              ex.accessDeniedHandler(customAccessDeniedHandler())
         );
 
 
