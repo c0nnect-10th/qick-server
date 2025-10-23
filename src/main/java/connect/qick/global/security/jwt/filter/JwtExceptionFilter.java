@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.global.data.ApiResponse;
 import connect.qick.global.data.ErrorResponse;
+import connect.qick.global.util.ApiResponseWriter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class JwtExceptionFilter extends OncePerRequestFilter {
 
-    private final ObjectMapper mapper;
+    private final ApiResponseWriter writer;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -46,10 +47,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         ErrorResponse errorResponse = ErrorResponse.of(ex.getStatusCode().getCode(), ex.getMessage());
         ApiResponse<Void> apiResponse = ApiResponse.error(status, errorResponse);
 
-        response.setStatus(status.value());
-        response.setContentType("application/json;charset=UTF-8");
-        String json = mapper.writeValueAsString(apiResponse);
-        response.getWriter().write(json);
+        writer.write(status, apiResponse, response);
     }
 
 

@@ -28,7 +28,6 @@ public class RefreshUseCase {
             throw new AuthException(AuthStatusCode.NOT_REFRESH_TOKEN);
         }
 
-        //TODO: handler로 에러 잡기
         //TODO: refreshToken rotation 필요
         return RefreshTokenResponse.builder()
                 .accessToken(jwtProvider.reprovideToken(claims))

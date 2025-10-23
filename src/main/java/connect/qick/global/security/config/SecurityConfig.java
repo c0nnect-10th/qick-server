@@ -5,6 +5,7 @@ import connect.qick.global.security.jwt.filter.JwtExceptionFilter;
 import connect.qick.global.security.jwt.filter.JwtFilter;
 import connect.qick.global.security.jwt.handler.CustomAccessDeniedHandler;
 import connect.qick.global.security.jwt.handler.CustomAuthenticationEntryPoint;
+import connect.qick.global.util.ApiResponseWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,27 +26,27 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final JwtFilter jwtFilter;
-  private final ObjectMapper objectMapper;
+  private final ApiResponseWriter apiResponseWriter;
 
   @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-  @Bean
+  @Bean //TODO: 컨포넌트로 변경
     public JwtExceptionFilter jwtExceptionFilter() {
     // Spring에 등록된 ObjectMapper는 LocalDateTime 직렬화를 할 수 있는 JavaTimeModule이 자동등록되어있음
-    return new JwtExceptionFilter(objectMapper);
+    return new JwtExceptionFilter(apiResponseWriter);
   }
 
   @Bean
   public CustomAccessDeniedHandler customAccessDeniedHandler() {
-    return new CustomAccessDeniedHandler(objectMapper);
+    return new CustomAccessDeniedHandler(apiResponseWriter);
   }
 
   @Bean
   public CustomAuthenticationEntryPoint customAuthenticationEntryPoint() {
-    return new CustomAuthenticationEntryPoint(objectMapper);
+    return new CustomAuthenticationEntryPoint(apiResponseWriter);
   }
 
   @Bean
