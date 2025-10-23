@@ -6,5 +6,5 @@ import lombok.Builder;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record RefreshTokenResponse(
-  String refreshToken
+  String accessToken
 ) { }

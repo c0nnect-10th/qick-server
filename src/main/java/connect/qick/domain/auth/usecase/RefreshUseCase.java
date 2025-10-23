@@ -4,7 +4,6 @@ import connect.qick.domain.auth.dto.request.RefreshTokenRequest;
 import connect.qick.domain.auth.dto.response.RefreshTokenResponse;
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
-import connect.qick.domain.user.enums.UserRole;
 import connect.qick.global.security.jwt.JwtExtract;
 import connect.qick.global.security.jwt.JwtProvider;
 import connect.qick.global.security.jwt.enums.TokenType;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class RefreshTokenUseCase {
+public class RefreshUseCase {
 
     private final JwtExtract jwtExtract;
     private final JwtProvider jwtProvider;
@@ -29,9 +28,10 @@ public class RefreshTokenUseCase {
             throw new AuthException(AuthStatusCode.NOT_REFRESH_TOKEN);
         }
 
-        //TODO: jwt provider에서 refreshToken 재발급 코드 작성, handler로 에러 잡기
+        //TODO: handler로 에러 잡기
+        //TODO: refreshToken rotation 필요
         return RefreshTokenResponse.builder()
-                .refreshToken(jwtProvider.reprovideRefreshToken(claims))
+                .accessToken(jwtProvider.reprovideToken(claims))
                 .build();
     };
 }

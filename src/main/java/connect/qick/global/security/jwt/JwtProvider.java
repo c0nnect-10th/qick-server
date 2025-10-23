@@ -1,13 +1,13 @@
 package connect.qick.global.security.jwt;
 
 
+import connect.qick.domain.auth.dto.request.RefreshTokenRequest;
+import connect.qick.domain.auth.exception.AuthException;
+import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.enums.UserRole;
 import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -40,10 +40,13 @@ public class JwtProvider {
                     .parseSignedClaims(token);
         }
         catch (ExpiredJwtException e) {
-            throw new IllegalArgumentException("Expired token", e);
+            throw new AuthException(AuthStatusCode.EXPIRED_TOKEN);
         }
         catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid token", e);
+            throw new AuthException(AuthStatusCode.INVALID_JWT);
+        }
+        catch (MalformedJwtException e) {
+            throw new AuthException(AuthStatusCode.INVALID_JWT);
         }
     }
 
@@ -68,6 +71,10 @@ public class JwtProvider {
 
     public String generateRefreshToken(String email, UserRole role) {
         return generateToken(TokenType.REFRESH, email, role, jwtProperties.getRefreshExpiration());
+    }
+
+    public String reprovideToken(Claims claims) {
+        return generateAccessToken(claims.getSubject(), UserRole.of(claims.get("authority")));
     }
 
 }
