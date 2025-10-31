@@ -26,7 +26,7 @@ public class UserEntity extends Base {
     private String name;
 
     @Enumerated(value= EnumType.STRING)
-    @Column(nullable = false, updatable = false, insertable = false)
+    @Column(name = "user_type", nullable = false, updatable = false, insertable = false)
     private UserType userType;
 
 }
