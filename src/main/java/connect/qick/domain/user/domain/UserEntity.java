@@ -29,6 +29,24 @@ public class UserEntity extends Base {
     @Column(name = "user_type", nullable = false, updatable = false, insertable = false)
     private UserType userType;
 
+    @Column(unique = true, nullable = false)
+    private String teacherCode;
+
+    @Column
+    private int grade;
+
+    @Column(name = "class")
+    private int classNumber;
+
+    @Column
+    private int number;
+
+    @Column
+    private int totalPoints;
+
+    @Column
+    private int totalCount;
+
 }
 
 
