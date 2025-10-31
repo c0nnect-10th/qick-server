@@ -9,10 +9,12 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name="users")
+@Table(name = "users")
 @Getter
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
 @SuperBuilder
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 public class UserEntity extends Base {
 
     @Column
@@ -25,6 +27,7 @@ public class UserEntity extends Base {
     private String name;
 
     @Enumerated(value= EnumType.STRING)
+    @Column(nullable = false, updatable = false, insertable = false)
     private UserType userType;
 
 }
