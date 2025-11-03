@@ -15,10 +15,15 @@ public class UserUseCase {
 
     public void checkTeacherCode(String teacherCode) {
         if (userRepository.existsByTeacherCode(teacherCode))
-            throw new AuthException(AuthStatusCode.INVALID_TEACHER_CODE);
+            throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
     }
 
-    public void saveTeacher(UserEntity user) {
+    public void checkStudentEmail(String email) {
+        if (userRepository.existsByEmail(email))
+            throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
+    }
+
+    public void saveUser(UserEntity user) {
         userRepository.save(user);
     }
 
