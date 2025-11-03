@@ -9,8 +9,6 @@ import lombok.*;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @AllArgsConstructor
 @Builder
 public class UserEntity extends Base {
