@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum AuthStatusCode implements StatusCode {
   INVALID_JWT("INVALID_JWT", "유효하지 않은 JWT입니다.", HttpStatus.UNAUTHORIZED),
+  EXPIRED_TOKEN("EXPIRED_TOKEN", "JWT가 만료되었습니다.", HttpStatus.UNAUTHORIZED),
+  INVALID_TOKEN_TYPE("INVALID_TOKEN_TYPE", "잘못된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
   INVALID_CREDENTIALS("INVALID_CREDENTIALS", "아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
   ACCOUNT_LOCKED("ACCOUNT_LOCKED", "계정이 잠겨 있습니다.", HttpStatus.UNAUTHORIZED),
   ACCOUNT_DISABLED("ACCOUNT_DISABLED", "계정이 비활성화되었습니다.", HttpStatus.UNAUTHORIZED),
