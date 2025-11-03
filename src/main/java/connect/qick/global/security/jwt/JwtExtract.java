@@ -1,6 +1,11 @@
 package connect.qick.global.security.jwt;
 
 import ch.qos.logback.core.util.StringUtil;
+import connect.qick.domain.auth.exception.AuthException;
+import connect.qick.domain.auth.exception.AuthStatusCode;
+import connect.qick.domain.user.entity.UserEntity;
+import connect.qick.domain.user.enums.UserType;
+import connect.qick.global.security.entity.CustomUserDetails;
 import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
 import io.jsonwebtoken.Claims;
@@ -29,11 +34,15 @@ public class JwtExtract {
         final Jws<Claims> jws = jwtProvider.getClaims(token);
         final Claims claims = jws.getPayload();
         if (!isCorrect(claims, TokenType.ACCESS)) {
-            // tokenTypeException
+            throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
         }
+        final UserEntity user = UserEntity.builder()
+                .name(claims.getSubject())
+                .userType(claims.get("authority", UserType.class))
+                .build();
+        final CustomUserDetails details = new CustomUserDetails(user);
 
-//        return new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities())
-        return null; // 임시
+        return new UsernamePasswordAuthenticationToken(details, null, details.getAuthorities());
     }
 
     public String extractToken(final String token) {

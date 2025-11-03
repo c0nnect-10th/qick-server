@@ -5,6 +5,7 @@ import connect.qick.domain.auth.dto.request.RefreshTokenRequest;
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.enums.UserRole;
+import connect.qick.domain.user.enums.UserType;
 import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
 import io.jsonwebtoken.*;
@@ -50,7 +51,7 @@ public class JwtProvider {
         }
     }
 
-    public String generateToken(TokenType tokenType, String email, UserRole role, long expiration) {
+    public String generateToken(TokenType tokenType, String email, UserType role, long expiration) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .header()
@@ -65,16 +66,16 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String generateAccessToken(String email, UserRole role) {
+    public String generateAccessToken(String email, UserType role) {
         return generateToken(TokenType.ACCESS, email, role, jwtProperties.getAccessExpiration());
     }
 
-    public String generateRefreshToken(String email, UserRole role) {
+    public String generateRefreshToken(String email, UserType role) {
         return generateToken(TokenType.REFRESH, email, role, jwtProperties.getRefreshExpiration());
     }
 
     public String reprovideToken(Claims claims) {
-        return generateAccessToken(claims.getSubject(), UserRole.of(claims.get("authority")));
+        return generateAccessToken(claims.getSubject(), (UserType) claims.get("authority"));
     }
 
 }
