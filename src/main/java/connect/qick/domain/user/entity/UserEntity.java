@@ -1,10 +1,9 @@
-package connect.qick.domain.user.domain;
+package connect.qick.domain.user.entity;
 
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
