@@ -27,17 +27,13 @@ public class SecurityConfig {
 
   private final JwtFilter jwtFilter;
   private final ApiResponseWriter apiResponseWriter;
+  private final JwtExceptionFilter jwtExceptionFilter;
 
   @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-  @Bean //TODO: 컨포넌트로 변경
-    public JwtExceptionFilter jwtExceptionFilter() {
-    // Spring에 등록된 ObjectMapper는 LocalDateTime 직렬화를 할 수 있는 JavaTimeModule이 자동등록되어있음
-    return new JwtExceptionFilter(apiResponseWriter);
-  }
 
   @Bean
   public CustomAccessDeniedHandler customAccessDeniedHandler() {
@@ -60,7 +56,7 @@ public class SecurityConfig {
         )
 
         .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-        .addFilterBefore(jwtExceptionFilter(), JwtFilter.class)
+        .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
 
         .authorizeHttpRequests((auth) -> auth
             .requestMatchers("/auth/**", "/api/v1/user/join").permitAll()

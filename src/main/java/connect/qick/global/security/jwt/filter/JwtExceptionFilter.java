@@ -21,6 +21,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
+@Component
 public class JwtExceptionFilter extends OncePerRequestFilter {
 
     private final ApiResponseWriter writer;
