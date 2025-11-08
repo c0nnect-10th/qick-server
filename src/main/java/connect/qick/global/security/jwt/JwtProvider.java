@@ -4,7 +4,6 @@ package connect.qick.global.security.jwt;
 import connect.qick.domain.auth.dto.request.RefreshTokenRequest;
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
-import connect.qick.domain.user.enums.UserRole;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
@@ -51,13 +50,13 @@ public class JwtProvider {
         }
     }
 
-    public String generateToken(TokenType tokenType, String email, UserType role, long expiration) {
+    public String generateToken(TokenType tokenType, Long id, UserType role, long expiration) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .header()
                 .type("JWT")
                 .and()
-                .subject(email)
+                .subject(id.toString())
                 .claim("token_type", tokenType.name())
                 .claim("authority", role.getKey())
                 .issuedAt(Date.from(now))
@@ -66,16 +65,16 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String generateAccessToken(String email, UserType role) {
-        return generateToken(TokenType.ACCESS, email, role, jwtProperties.getAccessExpiration());
+    public String generateAccessToken(Long id, UserType role) {
+        return generateToken(TokenType.ACCESS, id, role, jwtProperties.getAccessExpiration());
     }
 
-    public String generateRefreshToken(String email, UserType role) {
-        return generateToken(TokenType.REFRESH, email, role, jwtProperties.getRefreshExpiration());
+    public String generateRefreshToken(Long id, UserType role) {
+        return generateToken(TokenType.REFRESH, id, role, jwtProperties.getRefreshExpiration());
     }
 
     public String reprovideToken(Claims claims) {
-        return generateAccessToken(claims.getSubject(), (UserType) claims.get("authority"));
+        return generateAccessToken(Long.getLong(claims.getSubject()), (UserType) claims.get("authority"));
     }
 
 }

@@ -1,7 +1,8 @@
 package connect.qick.domain.auth.controller;
 
+import connect.qick.domain.auth.dto.request.StudentSignUpRequest;
 import connect.qick.domain.auth.dto.request.TeacherSignUpRequest;
-import connect.qick.domain.auth.usecase.TeacherSignUpUseCase;
+import connect.qick.domain.auth.usecase.SignUpUseCase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,18 +14,17 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final TeacherSignUpUseCase teachersignUpUseCase;
-
+    private final SignUpUseCase signUpUseCase;
 
     @PostMapping("signup/teacher")
     public ResponseEntity<Void> signUp(@Valid  @RequestBody TeacherSignUpRequest request) {
-        teachersignUpUseCase.signup(request);
+        signUpUseCase.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    /*@PostMapping("/login")
-    public ResponseEntity<SignInResponse> login(@Valid @RequestBody SignInRequest signInRequest) {
-        SignInResponse response = loginUseCase.login(signInRequest);
-        return ResponseEntity.ok(response);
-    }*/
+    @PostMapping("signup/student")
+    public ResponseEntity<Void> signUp(@Valid @RequestBody StudentSignUpRequest request) {
+        signUpUseCase.signup(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }

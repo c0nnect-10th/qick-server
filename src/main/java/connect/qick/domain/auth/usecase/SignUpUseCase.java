@@ -6,6 +6,7 @@ import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.usecase.UserUseCase;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class SignUpUseCase {
 
     private final UserUseCase userUseCase;
+    private final PasswordEncoder passwordEncoder;
 
     // Teacher 회원가입
     public void signup(TeacherSignUpRequest request) {
@@ -20,7 +22,7 @@ public class SignUpUseCase {
         UserEntity user = UserEntity.builder()
                 .userType(UserType.TEACHER)
                 .name(request.username())
-                .teacherCode(request.teacherCode())
+                .teacherCode(passwordEncoder.encode(request.teacherCode()))
                 .build();
         userUseCase.saveUser(user);
     }

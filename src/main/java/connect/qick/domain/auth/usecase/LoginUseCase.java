@@ -1,29 +1,27 @@
 package connect.qick.domain.auth.usecase;
 
-import connect.qick.domain.auth.dto.request.SignInRequest;
-import connect.qick.domain.auth.dto.response.SignInResponse;
+import connect.qick.domain.auth.dto.request.TeacherLoginRequest;
+import connect.qick.domain.auth.dto.response.LoginResponse;
 import connect.qick.domain.user.entity.UserEntity;
-import connect.qick.domain.user.enums.UserRole;
-import connect.qick.global.security.jwt.JwtProvider;
+import connect.qick.domain.user.usecase.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-@Service
+import java.util.Optional;
+
 @RequiredArgsConstructor
+@Service
 public class LoginUseCase {
 
-    private final JwtProvider jwtProvider;
+    private final UserUseCase userUseCase;
+    private final TokenProvideUseCase provideUseCase;
 
-    public SignInResponse login(SignInRequest request) {
-        // 레포에서 확인하는 코드
+    public LoginResponse login(String TeacherCode, String name) {
+        UserEntity user = userUseCase.getTeacher(TeacherCode, name);
+        String access = provideUseCase.getAccessToken(user);
+        String refresh = provideUseCase.getRefreshToken(user);
 
-        UserEntity user = new UserEntity();
-        String email = "";
-        UserRole role = UserRole.STUDENT;
-
-        String accessToken = jwtProvider.generateAccessToken(email, role);
-        String refreshToken = jwtProvider.generateRefreshToken(email, role);
-        return new SignInResponse(user, accessToken, refreshToken);
+        return new LoginResponse(access, refresh);
     }
 
 }
