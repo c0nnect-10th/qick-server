@@ -1,7 +1,6 @@
 package connect.qick.global.security.jwt;
 
 
-import connect.qick.domain.auth.dto.request.RefreshTokenRequest;
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.enums.UserType;
@@ -9,8 +8,6 @@ import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -46,7 +43,7 @@ public class JwtProvider {
             throw new AuthException(AuthStatusCode.INVALID_JWT);
         }
         catch (MalformedJwtException e) {
-            throw new AuthException(AuthStatusCode.INVALID_JWT);
+            throw new AuthException(AuthStatusCode.INVALID_JWT, "JWT 토큰 형식이 올바르지 않습니다.");
         }
     }
 

@@ -19,7 +19,7 @@ public enum AuthStatusCode implements StatusCode {
   ALREADY_EXISTS("ALREADY_EXISTS", "이미 가입된 사용자입니다.", HttpStatus.CONFLICT),
 
   UNAUTHORIZED("UNAUTHORIZED", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
-  ACCESS_DENIED("ACCESS_DENIED", "접근 권한이 없습니다.",  HttpStatus.FORBIDDEN),;
+  ACCESS_DENIED("ACCESS_DENIED", "접근 권한이 없습니다.",  HttpStatus.FORBIDDEN),
 
   ;
 

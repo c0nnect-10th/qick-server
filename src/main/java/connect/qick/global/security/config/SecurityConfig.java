@@ -1,6 +1,5 @@
 package connect.qick.global.security.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import connect.qick.global.security.jwt.filter.JwtExceptionFilter;
 import connect.qick.global.security.jwt.filter.JwtFilter;
 import connect.qick.global.security.jwt.handler.CustomAccessDeniedHandler;
@@ -28,6 +27,8 @@ public class SecurityConfig {
   private final JwtFilter jwtFilter;
   private final ApiResponseWriter apiResponseWriter;
   private final JwtExceptionFilter jwtExceptionFilter;
+
+
 
   @Bean
     public PasswordEncoder passwordEncoder() {
@@ -59,7 +60,8 @@ public class SecurityConfig {
         .addFilterBefore(jwtExceptionFilter, JwtFilter.class)
 
         .authorizeHttpRequests((auth) -> auth
-            .requestMatchers("/auth/**", "/api/v1/user/join").permitAll()
+            .requestMatchers("/auth/**").permitAll()
+            .requestMatchers("/login/**").permitAll()
 
             .anyRequest().authenticated()
         )
