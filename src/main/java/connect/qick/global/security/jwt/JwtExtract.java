@@ -54,7 +54,7 @@ public class JwtExtract {
     }
 
 
-    public boolean isCorrect(final Claims claims, final TokenType tokenType) {
+    public boolean checkTokenType(final Claims claims, final TokenType tokenType) {
         return claims.get("token_type").equals(tokenType.toString());
     }
 
