@@ -28,13 +28,10 @@ public class SecurityConfig {
   private final ApiResponseWriter apiResponseWriter;
   private final JwtExceptionFilter jwtExceptionFilter;
 
-
-
   @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 
   @Bean
   public CustomAccessDeniedHandler customAccessDeniedHandler() {

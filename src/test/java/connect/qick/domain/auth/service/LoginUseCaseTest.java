@@ -1,6 +1,5 @@
 package connect.qick.domain.auth.service;
 
-import connect.qick.domain.auth.dto.response.LoginResponse;
 import connect.qick.domain.auth.exception.AuthException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

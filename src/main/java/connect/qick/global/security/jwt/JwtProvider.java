@@ -70,7 +70,7 @@ public class JwtProvider {
         return generateToken(TokenType.REFRESH, id, role, jwtProperties.getRefreshExpiration());
     }
 
-    public String reprovideToken(Claims claims) {
+    public String refresh(Claims claims) {
         return generateAccessToken(Long.getLong(claims.getSubject()), (UserType) claims.get("authority"));
     }
 
