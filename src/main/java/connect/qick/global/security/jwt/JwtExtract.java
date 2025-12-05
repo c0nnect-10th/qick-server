@@ -1,12 +1,10 @@
 package connect.qick.global.security.jwt;
 
-import ch.qos.logback.core.util.StringUtil;
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.global.security.entity.CustomUserDetails;
-import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -22,8 +20,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class JwtExtract {
 
-//    private final UserRepository userRepository;
-    private final JwtProperties jwtProperties;
     private final JwtProvider jwtProvider;
 
     public String extractTokenFromRequest(HttpServletRequest request) {
@@ -33,7 +29,7 @@ public class JwtExtract {
     public Authentication getAuthentication(final String token) {
         final Jws<Claims> jws = jwtProvider.getClaims(token);
         final Claims claims = jws.getPayload();
-        if (!isCorrect(claims, TokenType.ACCESS)) {
+        if (!checkTokenType(claims, TokenType.ACCESS)) {
             throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
         }
         final UserEntity user = UserEntity.builder()
