@@ -39,14 +39,4 @@ public class userService {
         userRepository.save(user);
     }
 
-    public UserEntity getTeacher(String teacherCode, String name) {
-        List<UserEntity> users = userRepository.findAll();
-        return users.stream()
-                .filter(user ->
-                        passwordEncoder.matches(teacherCode, user.getTeacherCode()) &&
-                        user.getName().equals(name))
-                .findFirst()
-                .orElseThrow(() -> new AuthException(AuthStatusCode.INVALID_TEACHER_CODE));
-    }
-
 }
