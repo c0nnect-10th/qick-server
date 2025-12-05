@@ -22,11 +22,11 @@ public class UserEntity extends Base {
     @Column
     private String name;
 
-    @Enumerated(value= EnumType.STRING)
-    @Column(name = "user_type", nullable = false, updatable = false, insertable = false)
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "user_type", nullable = false, updatable = false)
     private UserType userType;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String teacherCode;
 
     @Column

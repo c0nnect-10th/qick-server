@@ -1,5 +1,6 @@
 package connect.qick.global.exception;
 
+import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.global.data.ApiResponse;
 import connect.qick.global.data.ErrorResponse;
@@ -89,6 +90,7 @@ public class GlobalExceptionHandler {
         .status(CommonStatusCode.INVALID_ARGUMENT.getHttpStatus())
         .body(ApiResponse.error(CommonStatusCode.INVALID_ARGUMENT.getHttpStatus(), error));
   }
+
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex) {
