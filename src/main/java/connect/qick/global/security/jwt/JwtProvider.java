@@ -55,7 +55,7 @@ public class JwtProvider {
                 .and()
                 .subject(id.toString())
                 .claim("token_type", tokenType.name())
-                .claim("authority", role.getKey())
+                .claim("authority", role.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(expiration, ChronoUnit.MILLIS)))
                 .signWith(key, Jwts.SIG.HS256)
@@ -71,7 +71,8 @@ public class JwtProvider {
     }
 
     public String refresh(Claims claims) {
-        return generateAccessToken(Long.getLong(claims.getSubject()), (UserType) claims.get("authority"));
+        System.out.println(claims);
+        return generateAccessToken(Long.getLong(claims.getSubject()), UserType.valueOf(claims.get("authority", String.class)));
     }
 
 }

@@ -32,9 +32,10 @@ public class JwtExtract {
         if (!checkTokenType(claims, TokenType.ACCESS)) {
             throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
         }
+        UserType userType = UserType.valueOf(claims.get("authority", String.class));
         final UserEntity user = UserEntity.builder()
                 .name(claims.getSubject())
-                .userType(claims.get("authority", UserType.class))
+                .userType(userType)
                 .build();
         final CustomUserDetails details = new CustomUserDetails(user);
 
