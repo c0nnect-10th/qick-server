@@ -16,7 +16,7 @@ import java.util.UUID;
 class userServiceTest {
 
     @Autowired
-    userService userService;
+    UserService userService;
 
     @Autowired
     PasswordEncoder passwordEncoder;
