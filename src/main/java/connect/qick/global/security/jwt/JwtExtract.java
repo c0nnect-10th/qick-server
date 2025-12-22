@@ -34,7 +34,7 @@ public class JwtExtract {
         }
         UserType userType = UserType.valueOf(claims.get("authority", String.class));
         final UserEntity user = UserEntity.builder()
-                .name(claims.getSubject())
+                .googleId(claims.getSubject())
                 .userType(userType)
                 .build();
         final CustomUserDetails details = new CustomUserDetails(user);

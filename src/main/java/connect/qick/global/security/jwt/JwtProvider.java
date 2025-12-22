@@ -47,13 +47,13 @@ public class JwtProvider {
         }
     }
 
-    public String generateToken(TokenType tokenType, Long id, UserType role, long expiration) {
+    public String generateToken(TokenType tokenType, String googleId, UserType role, long expiration) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .header()
                 .type("JWT")
                 .and()
-                .subject(id.toString())
+                .subject(googleId)
                 .claim("token_type", tokenType.name())
                 .claim("authority", role.name())
                 .issuedAt(Date.from(now))
@@ -62,17 +62,17 @@ public class JwtProvider {
                 .compact();
     }
 
-    public String generateAccessToken(Long id, UserType role) {
-        return generateToken(TokenType.ACCESS, id, role, jwtProperties.getAccessExpiration());
+    public String generateAccessToken(String googleId, UserType role) {
+        return generateToken(TokenType.ACCESS, googleId, role, jwtProperties.getAccessExpiration());
     }
 
-    public String generateRefreshToken(Long id, UserType role) {
-        return generateToken(TokenType.REFRESH, id, role, jwtProperties.getRefreshExpiration());
+    public String generateRefreshToken(String googleId, UserType role) {
+        return generateToken(TokenType.REFRESH, googleId, role, jwtProperties.getRefreshExpiration());
     }
 
     public String refresh(Claims claims) {
         System.out.println(claims);
-        return generateAccessToken(Long.getLong(claims.getSubject()), UserType.valueOf(claims.get("authority", String.class)));
+        return generateAccessToken(claims.getSubject(), UserType.valueOf(claims.get("authority", String.class)));
     }
 
 }
