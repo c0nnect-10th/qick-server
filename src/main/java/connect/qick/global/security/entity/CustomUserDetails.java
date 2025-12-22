@@ -25,6 +25,10 @@ public class CustomUserDetails implements UserDetails {
         this.authorities = List.of(new SimpleGrantedAuthority(userEntity.getUserType().getKey()));
     }
 
+    public String getGoogleId() {
+        return userEntity.getGoogleId();
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
