@@ -4,6 +4,8 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import connect.qick.domain.auth.dto.response.LoginResponse;
 import connect.qick.domain.auth.dto.response.UserResolveResult;
+import connect.qick.domain.auth.exception.AuthException;
+import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.service.UserService;
@@ -40,12 +42,12 @@ public class AuthService {
         try {
             GoogleIdToken googleIdToken = idTokenVerifier.verify(idToken);
             if (googleIdToken == null) {
-                throw new GeneralSecurityException("Invalid idToken");
+                throw new AuthException(AuthStatusCode.INVALID_ID_TOKEN);
             }
 
             return googleIdToken;
         } catch (GeneralSecurityException | IOException e) {
-            throw new RuntimeException(e);
+            throw new AuthException(AuthStatusCode.INVALID_ID_TOKEN);
         }
 
     }
