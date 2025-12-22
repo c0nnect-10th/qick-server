@@ -31,9 +31,10 @@ public class AuthService {
     @Transactional
     public LoginResponse login(final String idToken) {
         GoogleIdToken googleIdToken = verifyIdToken(idToken);
+        String googleId = googleIdToken.getPayload().getSubject();
         UserResolveResult resolveResult = getOrCreateUser(googleIdToken);
-        String accessToken = jwtProvider.generateAccessToken(resolveResult.getUser().getId(), resolveResult.getUser().getUserType());
-        String refreshToken = jwtProvider.generateRefreshToken(resolveResult.getUser().getId(), resolveResult.getUser().getUserType());
+        String accessToken = jwtProvider.generateAccessToken(googleId, resolveResult.getUser().getUserType());
+        String refreshToken = jwtProvider.generateRefreshToken(googleId, resolveResult.getUser().getUserType());
         return new LoginResponse(accessToken, refreshToken, resolveResult.getIsNewUser());
     }
 
@@ -64,11 +65,14 @@ public class AuthService {
         if (opt.isPresent()) {
             return new UserResolveResult(opt.get());
         }
-
+        String email = token.getPayload().getEmail();
+        String name = token.getPayload().get("name").toString();
         return new UserResolveResult(true, userService.saveUser(
             UserEntity.builder()
                 .userType(UserType.GUEST)
                 .googleId(googleId)
+                .name(name)
+                .email(email)
                 .build()));
         }
 }
