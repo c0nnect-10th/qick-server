@@ -33,6 +33,8 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+	implementation 'com.google.api-client:google-api-client:2.2.0'
+	implementation 'com.google.http-client:google-http-client-gson:1.44.1'
 	compileOnly "org.flywaydb:flyway-mysql"
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'

@@ -27,15 +27,6 @@ spring:
     access-expiration: 600000
     refresh-expiration: 600000
 
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id:
-            client-secret: //
-            scope:
-#              - profile
-              - email
-              - name
-              - openid
+  oauth2:
+    google:
+      client-id: ${GOOGLE_OAUTH_CLIENT_ID:?GOOGLE_OAUTH_CLIENT_ID missing}
