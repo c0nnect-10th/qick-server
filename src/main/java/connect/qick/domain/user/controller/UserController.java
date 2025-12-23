@@ -1,12 +1,11 @@
 package connect.qick.domain.user.controller;
 
-import connect.qick.domain.user.dto.request.UpdateUserRequest;
-import connect.qick.domain.user.entity.UserEntity;
+import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.global.data.ApiResponse;
 import connect.qick.global.security.entity.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +22,29 @@ public class UserController {
         return ResponseEntity.ok("hello, world!!");
     }
 
+    @PostMapping("/signup/student")
+    public ResponseEntity<ApiResponse<?>> signupUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody SignupStudentRequest request
+    ) {
+        userService.signupStudent(userDetails.getGoogleId(), request);
+        return ResponseEntity.ok(
+                ApiResponse.ok("Signed up successfully!")
+        );
+    }
+
+//    @PostMapping("/signup/teacher")
+//    public ResponseEntity<ApiResponse<?>> signupTeacher(
+//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @RequestBody Signup
+//    )
+
     @PatchMapping("/student")
     public ResponseEntity<ApiResponse<Void>> updateUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody UpdateUserRequest request
+            @RequestBody UpdateStudentRequest request
             ) {
-        userService.updateStudentUser(userDetails.getGoogleId(), request);
+        userService.updateStudent(userDetails.getGoogleId(), request);
         return ResponseEntity.noContent().build();
     }
 }
