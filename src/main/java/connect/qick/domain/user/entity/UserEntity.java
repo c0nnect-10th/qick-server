@@ -21,10 +21,10 @@ import org.hibernate.annotations.ColumnDefault;
 @Builder
 public class UserEntity extends Base {
 
-    @Column
+    @Column(unique = true)
     private String googleId;
 
-    @Column
+    @Column(unique = true)
     private String email;
 
     @Column
