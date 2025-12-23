@@ -8,6 +8,8 @@ import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserType;
+import connect.qick.domain.user.exception.UserException;
+import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.global.security.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
@@ -54,8 +56,10 @@ public class AuthService {
     }
 
     public String refresh(String refreshToken) {
-        Jws<Claims> claims = jwtProvider.getClaims(refreshToken);
-        return jwtProvider.refresh(claims.getPayload());
+        Claims claims = jwtProvider.getClaims(refreshToken).getPayload();
+        UserEntity user = userService.getUserByGoogleId(claims.getSubject())
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        return jwtProvider.generateAccessToken(claims.getSubject(), user.getUserType());
     }
 
 

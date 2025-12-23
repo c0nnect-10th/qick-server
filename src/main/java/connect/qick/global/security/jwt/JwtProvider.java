@@ -70,9 +70,4 @@ public class JwtProvider {
         return generateToken(TokenType.REFRESH, googleId, role, jwtProperties.getRefreshExpiration());
     }
 
-    public String refresh(Claims claims) {
-        System.out.println(claims);
-        return generateAccessToken(claims.getSubject(), UserType.valueOf(claims.get("authority", String.class)));
-    }
-
 }
