@@ -73,7 +73,6 @@ public class AuthService {
         String name = token.getPayload().get("name").toString();
         return new UserResolveResult(true, userService.saveUser(
             UserEntity.builder()
-                .userType(UserType.GUEST)
                 .googleId(googleId)
                 .name(name)
                 .email(email)

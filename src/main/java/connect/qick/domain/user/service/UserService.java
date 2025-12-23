@@ -5,6 +5,7 @@ import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.entity.UserEntity;
+import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
@@ -37,11 +38,12 @@ public class UserService {
     public void signupStudent(String googleId, SignupStudentRequest request) {
         UserEntity user = getUserByGoogleId(googleId)
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-        if(user.getUserType()!=UserType.GUEST) {
+        if(user.getUserStatus() == UserStatus.ACTIVE ) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
         user.updateUserProfile(request);
         user.setUserType(UserType.STUDENT);
+        user.setUserStatus(UserStatus.ACTIVE);
         //TODO: blacklist 추가
     }
 

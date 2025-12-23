@@ -1,13 +1,16 @@
 package connect.qick.domain.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @Table(name = "users")
@@ -28,8 +31,13 @@ public class UserEntity extends Base {
     private String name;
 
     @Enumerated(value = EnumType.STRING)
-    @Column(name = "user_type", nullable = false, updatable = false)
-    private UserType userType;
+    @Column(name = "user_type", nullable = false)
+    private UserType userType = UserType.USER;
+
+    @JsonIgnore
+    @Enumerated(value = EnumType.STRING)
+    @Column(name = "user_status", nullable = false)
+    private UserStatus userStatus = UserStatus.TEMP;
 
     @Column(unique = true)
     private String teacherCode;
