@@ -2,6 +2,7 @@ package connect.qick.domain.user.controller;
 
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.global.data.ApiResponse;
 import connect.qick.global.security.entity.CustomUserDetails;
@@ -18,8 +19,14 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/")
-    public ResponseEntity<?> getUser() {
-        return ResponseEntity.ok("hello, world!!");
+    public ResponseEntity<ApiResponse<UserResponse>> getUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                    userService.getUserInfo(userDetails.getGoogleId())
+                )
+        );
     }
 
     @PostMapping("/signup/student")

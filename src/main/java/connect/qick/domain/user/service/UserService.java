@@ -4,6 +4,7 @@ import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
@@ -28,6 +29,13 @@ public class UserService {
 
     public Optional<UserEntity> getUserByGoogleId(String googleId) {
         return userRepository.findByGoogleId(googleId);
+    }
+
+    public UserResponse getUserInfo(String googleId) {
+        return UserResponse.from(
+                getUserByGoogleId(googleId)
+                    .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND))
+        );
     }
 
     public Optional<UserEntity> getUserByUserId(Long userId) {

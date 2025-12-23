@@ -18,7 +18,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/google")
+    @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody @Valid IdTokenRequest idTokenRequest) {
         return ResponseEntity.ok(
                 ApiResponse.ok(
