@@ -50,8 +50,16 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> updateUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody UpdateStudentRequest request
-            ) {
+        ) {
         userService.updateStudent(userDetails.getGoogleId(), request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        userService.deleteUser(userDetails.getGoogleId());
         return ResponseEntity.noContent().build();
     }
 }

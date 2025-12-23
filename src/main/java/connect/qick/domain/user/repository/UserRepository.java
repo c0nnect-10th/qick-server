@@ -26,6 +26,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     UserEntity save(UserEntity userEntity);
 
-
-
+    void deleteByGoogleId(String googleId);
 }

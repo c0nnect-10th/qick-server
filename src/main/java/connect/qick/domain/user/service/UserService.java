@@ -66,4 +66,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
+    public void deleteUser(String googleId) {
+        if (userRepository.existsByGoogleId(googleId)) {
+            throw new UserException(UserStatusCode.NOT_FOUND);
+        }
+        userRepository.deleteByGoogleId(googleId);
+    }
 }
