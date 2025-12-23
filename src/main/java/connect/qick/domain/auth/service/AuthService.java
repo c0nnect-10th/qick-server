@@ -43,6 +43,7 @@ public class AuthService {
     public GoogleIdToken verifyIdToken(final String idToken) {
         try {
             GoogleIdToken googleIdToken = idTokenVerifier.verify(idToken);
+            System.out.println(googleIdToken);
             if (googleIdToken == null) {
                 throw new AuthException(AuthStatusCode.INVALID_ID_TOKEN);
             }
@@ -67,7 +68,7 @@ public class AuthService {
         String email = token.getPayload().getEmail();
         String name = token.getPayload().get("name").toString();
         return userService.getUserByGoogleId(googleId)
-            .orElse(userService.saveUser(
+            .orElseGet(() -> userService.saveUser(
                 UserEntity.builder()
                     .userStatus(UserStatus.TEMP)
                     .userType(UserType.USER)
