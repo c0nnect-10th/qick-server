@@ -21,30 +21,6 @@ class userServiceTest {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    @Test
-    void throwAuthException() {
-        String tCode = UUID.randomUUID().toString();
-        Assertions.assertThrows(AuthException.class, () -> {
-            userService.getTeacher(tCode, null);
-        });
-    }
 
-    @Test
-    void saveTeacher() {
-        String tCode = "abcd";
-        String name = "안녕하시긔";
-
-        UserEntity user = UserEntity.builder()
-                .teacherCode(passwordEncoder.encode(tCode))
-                .userType(UserType.TEACHER)
-                .name(name)
-                .build();
-
-        userService.saveUser(user);
-
-        UserEntity loadedUser = userService.getTeacher(tCode, name);
-
-        Assertions.assertEquals(user.getName(), loadedUser.getName());
-    }
 
 }

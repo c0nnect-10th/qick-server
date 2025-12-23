@@ -23,12 +23,12 @@ public class UserController {
         return ResponseEntity.ok("hello, world!!");
     }
 
-    @PatchMapping("/")
+    @PatchMapping("/student")
     public ResponseEntity<ApiResponse<Void>> updateUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestBody UpdateUserRequest request
             ) {
-        userService.updateUser(userDetails.getGoogleId(), request);
+        userService.updateStudentUser(userDetails.getGoogleId(), request);
         return ResponseEntity.noContent().build();
     }
 }

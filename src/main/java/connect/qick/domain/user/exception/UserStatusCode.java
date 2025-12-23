@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum UserStatusCode implements StatusCode {
   NOT_FOUND("NOT_FOUND", "유저가 존재하지 않습니다.", HttpStatus.UNAUTHORIZED),
+  INVALID_CLASSROOM("INVALID_CLASSROOM", "학반의 형식이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
   ;
 
   private final String code;
