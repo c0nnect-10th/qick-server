@@ -56,10 +56,11 @@ public class UserService {
     }
 
     @Transactional
-    public void updateStudent(String googleId, UpdateStudentRequest request) {
+    public UserResponse updateStudent(String googleId, UpdateStudentRequest request) {
         UserEntity user = getUserByGoogleId(googleId)
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
         user.updateUserProfile(request);
+        return UserResponse.from(user);
     }
 
     public UserEntity saveUser(UserEntity user) {
@@ -68,7 +69,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(String googleId) {
-        if (userRepository.existsByGoogleId(googleId)) {
+        if (!userRepository.existsByGoogleId(googleId)) {
             throw new UserException(UserStatusCode.NOT_FOUND);
         }
         userRepository.deleteByGoogleId(googleId);

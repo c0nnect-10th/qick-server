@@ -10,8 +10,11 @@ import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
+import connect.qick.domain.user.repository.UserRepository;
 import connect.qick.domain.user.service.UserService;
+import connect.qick.global.security.jwt.JwtExtract;
 import connect.qick.global.security.jwt.JwtProvider;
+import connect.qick.global.security.jwt.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ import java.util.Optional;
 public class AuthService {
 
     private final JwtProvider jwtProvider;
+    private final JwtExtract jwtExtract;
     private final GoogleIdTokenVerifier idTokenVerifier;
     private final UserService userService;
 
@@ -57,6 +61,9 @@ public class AuthService {
 
     public String refresh(String refreshToken) {
         Claims claims = jwtProvider.getClaims(refreshToken).getPayload();
+        if (!jwtExtract.checkTokenType(claims, TokenType.REFRESH)) {
+            throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
+        }
         UserEntity user = userService.getUserByGoogleId(claims.getSubject())
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
         return jwtProvider.generateAccessToken(claims.getSubject(), user.getUserType());
