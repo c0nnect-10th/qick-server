@@ -20,6 +20,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         )
     from VolunteerWorkEntity e
     join e.teacher t
+    where e.status = 'RECRUITING'
     order by e.createdAt desc
     """)
     List<VolunteerWorkSummaryResponse> findAllSummary();
