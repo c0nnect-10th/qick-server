@@ -22,4 +22,5 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     order by e.createdAt desc
     """)
     List<VolunteerWorkResponse> findAllSummary();
+
 }

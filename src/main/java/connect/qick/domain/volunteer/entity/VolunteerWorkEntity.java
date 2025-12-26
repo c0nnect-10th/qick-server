@@ -21,7 +21,7 @@ public class VolunteerWorkEntity extends Base {
     @Column
     private String workName;
 
-    @Column
+    @Column(nullable = false)
     private String location;
 
     @Column(nullable = false)
