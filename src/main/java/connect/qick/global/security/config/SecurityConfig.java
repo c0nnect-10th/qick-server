@@ -60,6 +60,7 @@ public class SecurityConfig {
             .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/login/**").permitAll()
             .requestMatchers("/user/student").hasRole("STUDENT")
+            .requestMatchers("/volunteer/create", "/volunteer/*").hasRole("TEACHER")
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
             .anyRequest().authenticated()

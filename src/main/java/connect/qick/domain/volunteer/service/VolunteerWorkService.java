@@ -1,5 +1,7 @@
 package connect.qick.domain.volunteer.service;
 
+import connect.qick.domain.auth.exception.AuthException;
+import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
@@ -9,6 +11,8 @@ import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
+import connect.qick.domain.volunteer.exception.VolunteerException;
+import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,5 +55,19 @@ public class VolunteerWorkService {
         volunteerWorkRepository.save(work);
 
         return new CreateVolunteerWorkResponse(work.getId(), work.getStatus());
+    }
+
+    public VolunteerWorkEntity findById(Long id) {
+        return volunteerWorkRepository.findById(id)
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+    }
+
+    public void deleteVolunteerWork(Long workId, String googleId) {
+        VolunteerWorkEntity volunteerWork = findById(workId);
+        if (!volunteerWork.getTeacher().getGoogleId().equals(googleId)) {
+            throw new AuthException(AuthStatusCode.ACCESS_DENIED);
+        }
+
+        volunteerWorkRepository.delete(volunteerWork);
     }
 }

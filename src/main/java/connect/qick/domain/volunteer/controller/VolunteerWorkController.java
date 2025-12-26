@@ -50,4 +50,16 @@ public class VolunteerWorkController {
                 )
         );
     }
+
+    @DeleteMapping("/{workId}")
+    public ResponseEntity<ApiResponse<String>> deleteVolunteerWork(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long workId
+    ) {
+        volunteerWorkService.deleteVolunteerWork(workId, userDetails.getGoogleId());
+
+        return ResponseEntity.ok(
+                ApiResponse.ok("봉사활동이 정상적으로 삭제되었습니다.")
+        );
+    }
 }
