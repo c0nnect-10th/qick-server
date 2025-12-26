@@ -7,10 +7,14 @@ import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -56,6 +60,9 @@ public class UserEntity extends Base {
 
     @Column
     private int totalCount;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
 
     public void updateUserProfile(UpdateStudentRequest request) {
         if (request.name() != null) this.name = request.name();
