@@ -8,6 +8,7 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @AllArgsConstructor
 public class VolunteerWorkResponse {
+    private Long id;
     private String workName;
     private String location;
     private String teacherName;
