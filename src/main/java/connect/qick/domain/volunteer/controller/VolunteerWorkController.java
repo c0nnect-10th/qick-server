@@ -3,6 +3,7 @@ package connect.qick.domain.volunteer.controller;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
+import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
 import connect.qick.domain.volunteer.service.VolunteerWorkService;
 import connect.qick.global.data.ApiResponse;
 import connect.qick.global.security.entity.CustomUserDetails;
@@ -24,10 +25,19 @@ public class VolunteerWorkController {
     private final VolunteerWorkService volunteerWorkService;
 
     @GetMapping("/")
-    public ResponseEntity<ApiResponse<List<VolunteerWorkResponse>>> getVolunteerWorks() {
+    public ResponseEntity<ApiResponse<List<VolunteerWorkSummaryResponse>>> getVolunteerWorks() {
         return ResponseEntity.ok(
                 ApiResponse.ok(
                         volunteerWorkService.findAll()
+                )
+        );
+    }
+
+    @GetMapping("/{workId}")
+    public ResponseEntity<ApiResponse<VolunteerWorkResponse>> getVolunteerWork(@PathVariable Long workId) {
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        volunteerWorkService.findVolunteerWork(workId)
                 )
         );
     }
@@ -51,7 +61,7 @@ public class VolunteerWorkController {
         );
     }
 
-    @DeleteMapping("/{workId}")
+    @DeleteMapping("/delete/{workId}")
     public ResponseEntity<ApiResponse<String>> deleteVolunteerWork(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long workId

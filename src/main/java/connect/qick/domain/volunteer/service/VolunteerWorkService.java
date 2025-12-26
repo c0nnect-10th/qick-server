@@ -8,6 +8,7 @@ import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
+import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
@@ -26,7 +27,7 @@ public class VolunteerWorkService {
     private final VolunteerWorkRepository volunteerWorkRepository;
     private final UserService userService;
 
-    public List<VolunteerWorkResponse> findAll() {
+    public List<VolunteerWorkSummaryResponse> findAll() {
         return volunteerWorkRepository.findAllSummary();
     }
 
@@ -60,6 +61,10 @@ public class VolunteerWorkService {
     public VolunteerWorkEntity findById(Long id) {
         return volunteerWorkRepository.findById(id)
                 .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+    }
+
+    public VolunteerWorkResponse findVolunteerWork(Long id) {
+        return VolunteerWorkResponse.from(findById(id));
     }
 
     public void deleteVolunteerWork(Long workId, String googleId) {
