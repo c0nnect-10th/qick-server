@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<UserEntity, Integer> {
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     boolean existsByTeacherCode(String teacherCode);
 
@@ -17,8 +17,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     boolean existsByGoogleId(String googleId);
 
     Optional<UserEntity> findByGoogleId(String googleId);
-
-    Optional<UserEntity> findById(Long userId);
 
     Optional<UserEntity> findByEmail(String email);
 

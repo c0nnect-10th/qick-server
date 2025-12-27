@@ -38,8 +38,9 @@ public class UserService {
         );
     }
 
-    public Optional<UserEntity> getUserByUserId(Long userId) {
-        return userRepository.findById(userId);
+    public UserEntity getUserByUserId(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
     }
 
     @Transactional

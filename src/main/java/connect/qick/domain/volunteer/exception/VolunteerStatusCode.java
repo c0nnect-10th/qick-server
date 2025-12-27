@@ -1,4 +1,4 @@
-package connect.qick.domain.user.exception;
+package connect.qick.domain.volunteer.exception;
 
 import connect.qick.global.exception.status_code.StatusCode;
 import lombok.Getter;
@@ -7,9 +7,8 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum UserStatusCode implements StatusCode {
-  NOT_FOUND("NOT_FOUND", "유저가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-  INVALID_CLASSROOM("INVALID_CLASSROOM", "학반의 형식이 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
+public enum VolunteerStatusCode implements StatusCode {
+  WORK_NOT_FOUND("WORK_NOT_FOUND", "봉사활동이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
   ;
 
   private final String code;
