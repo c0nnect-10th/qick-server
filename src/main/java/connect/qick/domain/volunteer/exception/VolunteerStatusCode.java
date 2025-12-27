@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum VolunteerStatusCode implements StatusCode {
-  WORK_NOT_FOUND("WORK_NOT_FOUND", "봉사활동이 존재하지 않습니다.", HttpStatus.UNAUTHORIZED),
+  WORK_NOT_FOUND("WORK_NOT_FOUND", "봉사활동이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
   ;
 
   private final String code;
