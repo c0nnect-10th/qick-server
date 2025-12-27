@@ -14,10 +14,17 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     boolean existsByEmail(String email);
 
+    boolean existsByGoogleId(String googleId);
+
+    Optional<UserEntity> findByGoogleId(String googleId);
+
+    Optional<UserEntity> findById(Long userId);
+
     Optional<UserEntity> findByEmail(String email);
 
     Optional<UserEntity> findByTeacherCode(String teacherCode);
 
     UserEntity save(UserEntity userEntity);
 
+    void deleteByGoogleId(String googleId);
 }

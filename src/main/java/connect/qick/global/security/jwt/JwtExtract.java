@@ -32,9 +32,10 @@ public class JwtExtract {
         if (!checkTokenType(claims, TokenType.ACCESS)) {
             throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
         }
+        UserType userType = UserType.valueOf(claims.get("authority", String.class));
         final UserEntity user = UserEntity.builder()
-                .name(claims.getSubject())
-                .userType(claims.get("authority", UserType.class))
+                .googleId(claims.getSubject())
+                .userType(userType)
                 .build();
         final CustomUserDetails details = new CustomUserDetails(user);
 
@@ -50,7 +51,7 @@ public class JwtExtract {
     }
 
 
-    public boolean checkTokenType(final Claims claims, final TokenType tokenType) {
+    public boolean checkTokenType(final Claims claims, final TokenType tokenType) { //TODO: 바로 exception 날리도록 수정
         return claims.get("token_type").equals(tokenType.toString());
     }
 
