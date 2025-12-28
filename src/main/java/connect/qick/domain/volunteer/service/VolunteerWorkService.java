@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -63,12 +64,23 @@ public class VolunteerWorkService {
                 .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
     }
 
+    public VolunteerWorkEntity findById(Long id, boolean checkCanceled) {
+        Optional<VolunteerWorkEntity> opt = volunteerWorkRepository.findById(id);
+        if (opt.isPresent()) {
+            if (opt.get().getStatus() != WorkStatus.CANCELLED && checkCanceled) {
+                return opt.get();
+            }
+            throw new VolunteerException(VolunteerStatusCode.WORK_CANCELLED);
+        }
+        throw new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND);
+    }
+
     public VolunteerWorkResponse findVolunteerWork(Long id) {
-        return VolunteerWorkResponse.from(findById(id));
+        return VolunteerWorkResponse.from(findById(id, true));
     }
 
     public void deleteVolunteerWork(Long workId, String googleId) {
-        VolunteerWorkEntity volunteerWork = findById(workId);
+        VolunteerWorkEntity volunteerWork = findById(workId, true);
         if (!volunteerWork.getTeacher().getGoogleId().equals(googleId)) {
             throw new AuthException(AuthStatusCode.ACCESS_DENIED);
         }
