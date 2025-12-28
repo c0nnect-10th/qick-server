@@ -92,7 +92,7 @@ public class VolunteerWorkController {
                                 request.location(),
                                 request.description(),
                                 request.difficulty(),
-                                request.start_time(),
+                                request.startTime(),
                                 userDetails.getGoogleId())
                 )
         );

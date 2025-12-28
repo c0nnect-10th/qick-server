@@ -37,7 +37,7 @@ public class VolunteerWorkService {
             String location,
             String description,
             WorkDifficulty difficulty,
-            LocalDateTime start_time,
+            LocalDateTime startTime,
             String googleId
     ) {
         UserEntity teacher =  userService.getUserByGoogleId(googleId)
@@ -50,7 +50,7 @@ public class VolunteerWorkService {
                 .status(WorkStatus.RECRUITING)
                 .description(description)
                 .difficulty(difficulty)
-                .start_time(start_time)
+                .startTime(startTime)
                 .teacher(teacher)
                 .build();
         volunteerWorkRepository.save(work);

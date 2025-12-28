@@ -30,6 +30,6 @@ public record CreateVolunteerWorkRequest(
 
    @NotNull(message = "모집 시간을 필수입니다.")
    @Schema(description = "심부름 시작 시간", example = "2025-12-27T13:00:00")
-   LocalDateTime start_time
+   LocalDateTime startTime
 
 ) {}
