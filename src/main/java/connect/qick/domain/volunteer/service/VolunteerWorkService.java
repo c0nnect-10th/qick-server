@@ -26,6 +26,7 @@ import java.util.Optional;
 @Service
 public class VolunteerWorkService {
     private final VolunteerWorkRepository volunteerWorkRepository;
+    private final VolunteerApplicationRepository applicationRepository;
     private final UserService userService;
 
     public List<VolunteerWorkSummaryResponse> findAll() {
