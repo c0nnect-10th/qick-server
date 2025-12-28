@@ -73,6 +73,6 @@ public class VolunteerWorkService {
             throw new AuthException(AuthStatusCode.ACCESS_DENIED);
         }
 
-        volunteerWorkRepository.delete(volunteerWork);
+        volunteerWork.setStatus(WorkStatus.CANCELLED);
     }
 }
