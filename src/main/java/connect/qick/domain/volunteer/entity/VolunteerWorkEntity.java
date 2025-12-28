@@ -9,6 +9,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="volunteer_work")
@@ -54,5 +56,8 @@ public class VolunteerWorkEntity extends Base {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", nullable = false)
     private UserEntity teacher; // 어케 불러올 것인지 찾아봐야할듯
+
+    @OneToMany(mappedBy = "volunteerWork", cascade = CascadeType.ALL)
+    private List<VolunteerApplicationEntity> applications = new ArrayList<>();
 
 }
