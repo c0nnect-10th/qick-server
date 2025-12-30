@@ -2,6 +2,7 @@ package connect.qick.domain.volunteer.service;
 
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
+import connect.qick.domain.point.service.PointService;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
@@ -20,9 +21,7 @@ import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
 import jakarta.transaction.Transactional;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -35,6 +34,7 @@ public class VolunteerWorkService {
     private final VolunteerWorkRepository volunteerWorkRepository;;
     private final VolunteerApplicationRepository applicationRepository;
     private final UserService userService;
+    private final PointService pointService;
 
     public List<VolunteerWorkSummaryResponse> findAll() {
         return volunteerWorkRepository.findAllSummary();
@@ -126,17 +126,26 @@ public class VolunteerWorkService {
         for (VolunteerApplicationEntity application : applications) {
             if (application.getStatus() == ApplicationStatus.APPLIED) {
                 Long studentId = application.getStudent().getId();
+                UserEntity student = application.getStudent();
 
                 if (attendedStudentIds.contains(studentId)) {
                     // 참여한 학생
                     application.setStatus(ApplicationStatus.COMPLETED);
                     application.setIsAttended(true);
                     application.setCompletedAt(LocalDateTime.now());
+
+                    // 포인트 지급
+                    pointService.earnPoints(student, work);
+
                     attendedCount++;
                 } else {
                     // 미참여 학생
                     application.setStatus(ApplicationStatus.NO_SHOW);
                     application.setIsAttended(false);
+
+                    // 포인트 차감
+                    pointService.deductPoints(student, work);
+
                     noShowCount++;
                 }
             }
