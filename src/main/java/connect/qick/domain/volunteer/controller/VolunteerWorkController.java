@@ -2,10 +2,7 @@ package connect.qick.domain.volunteer.controller;
 
 import connect.qick.domain.volunteer.dto.request.CompleteVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
-import connect.qick.domain.volunteer.dto.response.CompleteVolunteerWorkResponse;
-import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
-import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
-import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
+import connect.qick.domain.volunteer.dto.response.*;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.service.VolunteerWorkService;
@@ -181,4 +178,33 @@ public class VolunteerWorkController {
 
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
+
+    @GetMapping("/{workId}/applications")
+    @Operation(
+            summary = "봉사활동 신청자 목록 조회",
+            description = "교사가 자신이 생성한 봉사활동의 신청자 목록을 조회합니다. 출석 체크를 위해 사용됩니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "봉사활동을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    public ResponseEntity<ApiResponse<List<ApplicationStudentResponse>>> getApplicationStudents(
+            @PathVariable Long workId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<ApplicationStudentResponse> students = volunteerWorkService.getApplicationStudents(
+                workId,
+                userDetails.getGoogleId()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(students));
+    }
+
 }
