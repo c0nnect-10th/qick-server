@@ -48,7 +48,7 @@ public class VolunteerWorkEntity extends Base {
     private WorkStatus status;
 
     @Column(nullable = false)
-    private LocalDateTime start_time;
+    private LocalDateTime startTime;
 
 //    @Column end_time는 딱히 필요가 없어서 지웠습니다
 //    private LocalDateTime end_time;

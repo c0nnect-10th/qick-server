@@ -1,9 +1,13 @@
 package connect.qick.domain.volunteer.controller;
 
+import connect.qick.domain.volunteer.dto.request.CompleteVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
+import connect.qick.domain.volunteer.dto.response.CompleteVolunteerWorkResponse;
 import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.service.VolunteerWorkService;
 import connect.qick.global.data.ApiResponse;
 import connect.qick.global.data.ErrorResponse;
@@ -92,7 +96,7 @@ public class VolunteerWorkController {
                                 request.location(),
                                 request.description(),
                                 request.difficulty(),
-                                request.start_time(),
+                                request.startTime(),
                                 userDetails.getGoogleId())
                 )
         );
@@ -123,5 +127,58 @@ public class VolunteerWorkController {
         return ResponseEntity.ok(
                 ApiResponse.ok("봉사활동이 정상적으로 삭제되었습니다.")
         );
+    }
+
+    @PostMapping("/{workId}/complete")
+    @Operation(summary = "봉사활동 완료 처리", description = "교사가 봉사활동을 완료 처리하고 출석 체크를 합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "완료 처리 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 상태 (ONGOING이 아님)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "봉사활동을 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    public ResponseEntity<ApiResponse<CompleteVolunteerWorkResponse>> completeVolunteerWork(
+            @PathVariable Long workId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid CompleteVolunteerWorkRequest request
+    ) {
+        CompleteVolunteerWorkResponse response = volunteerWorkService.completeVolunteerWork(
+                workId,
+                request.attendedStudentIds(),
+                userDetails.getGoogleId()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "내가 생성한 봉사활동 목록 조회", description = "교사가 생성한 봉사활동 목록을 조회합니다. 상태별 필터링 가능합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            )
+    })
+    public ResponseEntity<ApiResponse<List<VolunteerWorkResponse>>> getMyVolunteerWorks(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) WorkStatus status
+    ) {
+        List<VolunteerWorkEntity> works = volunteerWorkService.getMyVolunteerWorks(
+                userDetails.getGoogleId(),
+                status
+        );
+
+        List<VolunteerWorkResponse> response = works.stream()
+                .map(VolunteerWorkResponse::from)
+                .toList();
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }
