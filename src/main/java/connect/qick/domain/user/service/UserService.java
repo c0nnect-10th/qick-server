@@ -3,7 +3,9 @@ package connect.qick.domain.user.service;
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.SignupTeacherRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.request.UpdateTeacherRequest;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserStatus;
@@ -38,8 +40,9 @@ public class UserService {
         );
     }
 
-    public Optional<UserEntity> getUserByUserId(Long userId) {
-        return userRepository.findById(userId);
+    public UserEntity getUserByUserId(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
     }
 
     @Transactional
@@ -56,10 +59,32 @@ public class UserService {
     }
 
     @Transactional
-    public void updateStudent(String googleId, UpdateStudentRequest request) {
+    public void signupTeacher(String googleId, SignupTeacherRequest request) {
+        UserEntity user = getUserByGoogleId(googleId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        if(user.getUserStatus() == UserStatus.ACTIVE ) {
+            throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
+        }
+        user.updateUserProfile(request);
+        user.setUserType(UserType.TEACHER);
+        user.setUserStatus(UserStatus.ACTIVE);
+        //TODO: blacklist 추가
+    }
+
+    @Transactional
+    public UserResponse updateStudent(String googleId, UpdateStudentRequest request) {
         UserEntity user = getUserByGoogleId(googleId)
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
         user.updateUserProfile(request);
+        return UserResponse.from(user);
+    }
+
+    @Transactional
+    public UserResponse updateTeacher(String googleId, UpdateTeacherRequest request) {
+        UserEntity user = getUserByGoogleId(googleId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        user.updateUserProfile(request);
+        return UserResponse.from(user);
     }
 
     public UserEntity saveUser(UserEntity user) {
@@ -68,7 +93,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(String googleId) {
-        if (userRepository.existsByGoogleId(googleId)) {
+        if (!userRepository.existsByGoogleId(googleId)) {
             throw new UserException(UserStatusCode.NOT_FOUND);
         }
         userRepository.deleteByGoogleId(googleId);
