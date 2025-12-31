@@ -59,8 +59,7 @@ public class AuthController {
                                     @ExampleObject(
                                             name = "Id Token 누락",
                                             summary = "Id Token이 요청 본문에 누락되었을 때의 응답",
-                                            value = "{\"status\":400,\"error\":{\"code\":\"INVALID_ARGUMENT\",\"timestamp\":\"2023-10-26T10:00:00.000000\"," +
-                                                    "}}"
+                                            value = "{\n    \"status\": 400,\n    \"error\": {\n        \"code\": \"INVALID_ARGUMENT\",\n        \"message\": \"요청값이 유효하지 않습니다.\",\n        \"timestamp\": \"2025-12-31T12:05:04.082689137\",\n        \"details\": {\n            \"idToken\": \"idToken은 필수입니다.\"\n        }\n    }\n}"
                                     )
                             }
                     )
@@ -86,17 +85,70 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @Operation(
-            summary="JWT 토큰 재발급",
-            description = "Refresh Token을 사용하여 새로운 Access Token을 발급합니다.")
+            summary = "JWT 토큰 재발급",
+            description = "Refresh Token을 사용하여 새로운 Access Token을 발급합니다."
+    )
     @ApiResponses({
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "토큰 재발급 성공",
-                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "200",
+                    description = "토큰 재발급 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "재발급 성공 예시",
+                                    value = """
+                {
+                    "status": 200,
+                    "data": {
+                        "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWI....."
+                    }
+                }
+                """
+                            )
+                    )
             ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 (Refresh Token 누락)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청 (Refresh Token 누락)",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "필수값 누락 예시",
+                                    value = """
+                {
+                    "status": 400,
+                    "error": {
+                        "code": "INVALID_ARGUMENT",
+                        "message": "요청값이 유효하지 않습니다.",
+                        "timestamp": "2025-12-31T12:03:21.140784957",
+                        "details": {
+                            "refreshToken": "refreshToken은 필수입니다."
+                        }
+                    }
+                }
+                """
+                            )
+                    )
             ),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패 (유효하지 않거나 만료된 Refresh Token)",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패 (유효하지 않거나 만료된 Refresh Token)",
+                    content = @Content(
+                            schema = @Schema(implementation = ErrorResponse.class),
+                            examples = @ExampleObject(
+                                    name = "인증 실패 예시",
+                                    value = """
+                {
+                    "status": 401,
+                    "error": {
+                        "code": "UNAUTHORIZED",
+                        "message": "유효하지 않거나 만료된 Refresh Token입니다.",
+                        "timestamp": "2025-12-31T12:05:00.000000"
+                    }
+                }
+                """
+                            )
+                    )
             )
     })
     public ResponseEntity<ApiResponse<RefreshResponse>> refresh(@RequestBody @Valid RefreshRequest request) {
