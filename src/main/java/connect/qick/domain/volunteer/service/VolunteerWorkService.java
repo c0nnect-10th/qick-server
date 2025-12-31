@@ -7,10 +7,7 @@ import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
-import connect.qick.domain.volunteer.dto.response.CompleteVolunteerWorkResponse;
-import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
-import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
-import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
+import connect.qick.domain.volunteer.dto.response.*;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
@@ -27,6 +24,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -176,6 +174,24 @@ public class VolunteerWorkService {
         } else {
             return volunteerWorkRepository.findAllByTeacherId(teacher.getId());
         }
+    }
+
+    public List<ApplicationStudentResponse> getApplicationStudents(Long workId, String googleId) {
+        // 봉사활동 조회
+        VolunteerWorkEntity work = findById(workId);
+
+        // 권한 확인 (본인이 생성한 봉사활동인지)
+        if (!work.getTeacher().getGoogleId().equals(googleId)) {
+            throw new AuthException(AuthStatusCode.ACCESS_DENIED);
+        }
+
+        // 신청자 목록 조회
+        List<VolunteerApplicationEntity> applications =
+                applicationRepository.findAllByVolunteerWorkId(workId);
+
+        return applications.stream()
+                .map(ApplicationStudentResponse::from)
+                .collect(Collectors.toList());
     }
 
 }
