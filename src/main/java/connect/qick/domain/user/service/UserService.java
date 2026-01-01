@@ -75,4 +75,12 @@ public class UserService {
         }
         userRepository.deleteByGoogleId(googleId);
     }
+
+    @Transactional
+    public void updateFcmToken(String googleId, String fcmToken) {
+        UserEntity user = getUserByGoogleId(googleId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        user.setFcmToken(fcmToken);
+        userRepository.save(user);
+    }
 }
