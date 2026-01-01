@@ -1,6 +1,7 @@
 package connect.qick.domain.user.controller;
 
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.UpdateFcmTokenRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.service.UserService;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @Tag(name = "User", description = "사용자 정보 관리 API")
 @SecurityRequirement(name = "bearerAuth")
@@ -105,6 +107,36 @@ public class UserController {
         ) {
         UserResponse updatedUser = userService.updateStudent(userDetails.getGoogleId(), request);
         return ResponseEntity.ok(ApiResponse.ok(updatedUser));
+    }
+
+    @PatchMapping("/fcm-token")
+    @Operation(summary = "FCM 토큰 등록/갱신", description = "인증된 사용자의 FCM 토큰을 등록하거나 갱신합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "FCM 토큰 등록/갱신 성공",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "FCM 토큰 등록/갱신 성공",
+                                    value = "{\"status\":200,\"data\":\"FCM 토큰이 성공적으로 갱신되었습니다.\",\"error\":null}"
+                            )
+                    )
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 (유효하지 않은 FCM 토큰)",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    public ResponseEntity<ApiResponse<String>> updateFcmToken(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid UpdateFcmTokenRequest request
+    ) {
+        userService.updateFcmToken(userDetails.getGoogleId(), request.fcmToken());
+        return ResponseEntity.ok(ApiResponse.ok("FCM 토큰이 성공적으로 갱신되었습니다."));
     }
 
     @DeleteMapping("/")
