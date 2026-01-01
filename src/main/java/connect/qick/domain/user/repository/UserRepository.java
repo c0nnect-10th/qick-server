@@ -1,6 +1,7 @@
 package connect.qick.domain.user.repository;
 
 import connect.qick.domain.user.entity.UserEntity;
+import connect.qick.domain.user.enums.UserType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,6 +22,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmail(String email);
 
     Optional<UserEntity> findByTeacherCode(String teacherCode);
+
+    List<UserEntity> findAllByUserType(UserType userType);
 
     UserEntity save(UserEntity userEntity);
 
