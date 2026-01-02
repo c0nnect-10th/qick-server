@@ -13,6 +13,7 @@ public enum VolunteerStatusCode implements StatusCode {
   ALREADY_APPLIED("ALREADY_APPLIED", "이미 신청한 봉사활동입니다.", HttpStatus.CONFLICT),
   RECRUITMENT_FULL("RECRUITMENT_FULL", "모집 인원이 마감되었습니다.", HttpStatus.CONFLICT),
   CANNOT_CANCEL("CANNOT_CANCEL", "취소할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST),
+  INVALID_WORK_STATUS("INVALID_WORK_STATUS", "봉사활동의 상태가 올바르지 않습니다.", HttpStatus.BAD_REQUEST),
   ;
 
   private final String code;

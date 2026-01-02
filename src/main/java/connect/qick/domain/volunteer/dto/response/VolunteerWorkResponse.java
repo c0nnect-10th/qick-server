@@ -44,7 +44,7 @@ public class VolunteerWorkResponse {
             entity.getDifficulty(),
             entity.getTeacher().getName(),
             entity.getLocation(),
-            entity.getStart_time(),
+            entity.getStartTime(),
             entity.getDescription(),
             entity.getMaxParticipants(),
             entity.getCurrentParticipants(),
