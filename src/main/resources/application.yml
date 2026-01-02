@@ -30,3 +30,6 @@ spring:
   oauth2:
     google:
       client-id: ${GOOGLE_OAUTH_CLIENT_ID:?GOOGLE_OAUTH_CLIENT_ID missing}
+
+firebase:
+  service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY_PATH:?FIREBASE_SERVICE_ACCOUNT_KEY_PATH missing}

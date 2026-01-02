@@ -15,6 +15,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -74,5 +75,17 @@ public class UserService {
             throw new UserException(UserStatusCode.NOT_FOUND);
         }
         userRepository.deleteByGoogleId(googleId);
+    }
+
+    @Transactional
+    public void updateFcmToken(String googleId, String fcmToken) {
+        UserEntity user = getUserByGoogleId(googleId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        user.setFcmToken(fcmToken);
+        userRepository.save(user);
+    }
+
+    public List<UserEntity> getUsersByUserType(UserType userType) {
+        return userRepository.findAllByUserType(userType);
     }
 }
