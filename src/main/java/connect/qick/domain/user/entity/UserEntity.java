@@ -2,7 +2,9 @@ package connect.qick.domain.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.SignupTeacherRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.request.UpdateTeacherRequest;
 import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
@@ -11,7 +13,6 @@ import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +86,15 @@ public class UserEntity extends Base {
         this.grade = Integer.parseInt(classroom.substring(0, 1));
         this.classNumber = Integer.parseInt(classroom.substring(1, 2));
         this.number = Integer.parseInt(classroom.substring(2));
+    }
+
+    public void updateUserProfile(SignupTeacherRequest request) {
+        this.name = request.name();
+        this.teacherCode = request.tCode();
+    }
+
+    public void updateUserProfile(UpdateTeacherRequest request) {
+        if (request.name() != null) this.name = request.name();
     }
 
 }

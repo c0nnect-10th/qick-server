@@ -1,7 +1,9 @@
 package connect.qick.domain.user.controller;
 
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.SignupTeacherRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.request.UpdateTeacherRequest;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.global.data.ApiResponse;
@@ -14,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -194,7 +197,7 @@ public class UserController {
     })
     public ResponseEntity<ApiResponse<?>> signupUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody SignupStudentRequest request
+            @RequestBody @Valid SignupStudentRequest request
     ) {
         userService.signupStudent(userDetails.getGoogleId(), request);
         return ResponseEntity.ok(
