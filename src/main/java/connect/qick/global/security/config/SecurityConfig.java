@@ -60,7 +60,6 @@ public class SecurityConfig {
             .requestMatchers("/auth/**").permitAll()
             .requestMatchers("/login/**").permitAll()
             .requestMatchers("/user/student").hasRole("STUDENT")
-            .requestMatchers("/user/teacher").hasRole("TEACHER")
             .requestMatchers("/volunteer/create", "/volunteer/delete/*", "/volunteer/*/complete", "/volunteer/my").hasRole("TEACHER")
             .requestMatchers("/volunteer/application/**").hasRole("STUDENT")
             .requestMatchers("/point/**").hasRole("STUDENT")

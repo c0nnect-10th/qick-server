@@ -51,7 +51,7 @@ public class JwtExtract {
     }
 
 
-    public boolean checkTokenType(final Claims claims, final TokenType tokenType) {
+    public boolean checkTokenType(final Claims claims, final TokenType tokenType) { //TODO: 바로 exception 날리도록 수정
         return claims.get("token_type").equals(tokenType.toString());
     }
 
