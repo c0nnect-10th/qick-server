@@ -3,6 +3,7 @@ package connect.qick.domain.user.controller;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateFcmTokenRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.global.data.ApiResponse;
@@ -20,6 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.util.List;
 
 @Tag(name = "User", description = "사용자 정보 관리 API")
 @SecurityRequirement(name = "bearerAuth")
@@ -353,5 +356,23 @@ public class UserController {
     ) {
         userService.deleteUser(userDetails.getGoogleId());
         return ResponseEntity.ok(ApiResponse.ok("계정이 성공적으로 삭제되었습니다."));
+    }
+
+    @GetMapping("/ranking")
+    @Operation(summary = "사용자 랭킹 조회", description = "포인트 기준 상위 20명의 사용자 랭킹을 조회합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "랭킹 조회 성공",
+                    content = @Content(schema = @Schema(implementation = ApiResponse.class))
+            ),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    public ResponseEntity<ApiResponse<List<UserRankingResponse>>> getUserRanking() {
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                    userService.getTopUsersByPoints(20)
+                )
+        );
     }
 }
