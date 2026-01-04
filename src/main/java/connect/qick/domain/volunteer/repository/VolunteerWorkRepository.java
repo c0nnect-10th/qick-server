@@ -45,4 +45,6 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     """)
     List<VolunteerWorkEntity> findAllByTeacherId(@Param("teacherId") Long teacherId);
 
+    List<VolunteerWorkEntity> findByStatusAndStartTimeBetween(WorkStatus status, LocalDateTime start, LocalDateTime end);
+
 }
