@@ -37,8 +37,8 @@ public class UserRankingResponse {
         response.ranking = ranking;
         response.name = user.getName();
         response.email = user.getEmail();
+        response.totalPoints = user.getTotalPoints();
         if (user.getUserType() == UserType.STUDENT) {
-            response.totalPoints = user.getTotalPoints();
             response.grade = user.getGrade();
             response.classNumber = user.getClassNumber();
             response.number = user.getNumber();
