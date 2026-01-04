@@ -13,6 +13,7 @@ import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
+import connect.qick.global.util.PushAlarmUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class VolunteerApplicationService {
     private final VolunteerApplicationRepository applicationRepository;
     private final VolunteerWorkRepository volunteerWorkRepository;
     private final UserService userService;
+    private final PushAlarmUtil pushAlarmUtil;
 
     @Transactional
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
@@ -65,6 +67,14 @@ public class VolunteerApplicationService {
             // 현재 참여 인원 증가
             work.setCurrentParticipants(work.getCurrentParticipants() + 1);
             volunteerWorkRepository.save(work);
+
+            // 선생님에게 푸시 알림 전송
+            UserEntity teacher = work.getTeacher();
+            if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
+                String title = "새로운 봉사활동 신청";
+                String body = String.format("%s 학생이 '%s' 봉사활동을 신청했습니다.", student.getName(), work.getWorkName());
+                pushAlarmUtil.send(teacher.getFcmToken(), title, body);
+            }
 
             return ApplicationResponse.from(application);
         }
