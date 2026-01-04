@@ -55,6 +55,17 @@ public class NotificationSchedulerService {
     }
 
     private void sendReminderForWork(VolunteerWorkEntity work, int minutesBefore) {
+
+        if (minutesBefore == 10 && work.isReminder10Sent()){
+            log.debug("봉사ID {}: 이미 10분 전에 알림이 전송됐습니다.", work.getId());
+            return;
+        }
+
+        if  (minutesBefore == 5 && work.isReminder5Sent()){
+            log.debug("봉사ID {}: 이미 5분 전에 알림이 전송됐습니다.", work.getId());
+            return;
+        }
+
         List<VolunteerApplicationEntity> applications = volunteerApplicationRepository.findAllByVolunteerWorkAndStatus(
                 work, ApplicationStatus.APPLIED);
 
@@ -77,5 +88,7 @@ public class NotificationSchedulerService {
 
         log.info("{}분 전 알림 전송: 봉사 ID: {}, 대상 학생 수: {}", minutesBefore, work.getId(), fcmTokens.size());
         pushAlarmUtil.sendMulticast(fcmTokens, title, body);
+
+        volunteerWorkRepository.save(work);
     }
 }
