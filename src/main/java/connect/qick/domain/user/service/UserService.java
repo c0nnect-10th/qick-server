@@ -4,6 +4,7 @@ import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserStatus;
@@ -13,9 +14,13 @@ import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -74,5 +79,16 @@ public class UserService {
             throw new UserException(UserStatusCode.NOT_FOUND);
         }
         userRepository.deleteByGoogleId(googleId);
+    }
+
+    public List<UserRankingResponse> getTopUsersByPoints(int limit) {
+        List<UserEntity> topUsers = userRepository.findByUserTypeOrderByTotalPointsDesc(
+                UserType.STUDENT, 
+                PageRequest.of(0, limit)
+        );
+
+        return IntStream.range(0, topUsers.size())
+                .mapToObj(i -> UserRankingResponse.from(topUsers.get(i), i + 1))
+                .collect(Collectors.toList());
     }
 }
