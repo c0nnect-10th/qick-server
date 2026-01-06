@@ -16,6 +16,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     select new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
         e.id,
         e.workName,
+        e.difficulty,
         e.location,
         t.name,
         e.maxParticipants,
