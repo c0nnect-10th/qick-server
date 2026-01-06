@@ -1,6 +1,7 @@
 package connect.qick.domain.volunteer.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +15,8 @@ public class VolunteerWorkSummaryResponse {
     private Long id;
     @Schema(description = "심부름 이름", example = "점심시간 교실 정리")
     private String workName;
+    @Schema(description = "심부름 난이도", example = "EASY")
+    private WorkDifficulty difficulty;
     @Schema(description = "심부름 수행 장소", example = "1-1 교실")
     private String location;
     @Schema(description = "담당 선생님 이름", example = "김선생")
