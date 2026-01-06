@@ -1,6 +1,7 @@
 package connect.qick.domain.volunteer.repository;
 
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -35,6 +36,8 @@ public interface VolunteerApplicationRepository extends JpaRepository<VolunteerA
         ORDER BY a.appliedAt ASC
     """)
     List<VolunteerApplicationEntity> findAllByVolunteerWorkId(@Param("workId") Long workId);
+
+    List<VolunteerApplicationEntity> findAllByVolunteerWorkAndStatus(VolunteerWorkEntity volunteerWork, ApplicationStatus status);
 
     // 특정 봉사활동의 APPLIED 상태인 신청 수 조회
     @Query("""

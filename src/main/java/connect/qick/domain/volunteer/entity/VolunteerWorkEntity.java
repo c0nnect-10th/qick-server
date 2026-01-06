@@ -60,4 +60,6 @@ public class VolunteerWorkEntity extends Base {
     @OneToMany(mappedBy = "volunteerWork", cascade = CascadeType.ALL)
     private List<VolunteerApplicationEntity> applications = new ArrayList<>();
 
+    private boolean reminder5Sent;
+    private boolean reminder10Sent;
 }
