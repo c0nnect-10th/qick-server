@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
     public void signupStudent(String googleId, SignupStudentRequest request) {
         UserEntity user = getUserByGoogleId(googleId)
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-        if(user.getUserStatus() == UserStatus.ACTIVE ) {
+        if(user.getUserStatus() == UserStatus.ACTIVE) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
         user.signupStudent(request);

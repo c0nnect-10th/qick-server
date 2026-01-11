@@ -12,6 +12,6 @@ public record SignupStudentRequest(
 
    @NotBlank(message = "학번은 필수입니다.")
    @Schema(description = "사용자 학번", example = "1317")
-   @Pattern(regexp = "^[1-9]\\d{3}$" , message = "학반의 형식이 일치하지 않습니다.")
+   @Pattern(regexp = "^[1-9]\\d{3}$" , message = "학번의 형식이 일치하지 않습니다.")
    String classroom
 ) {}

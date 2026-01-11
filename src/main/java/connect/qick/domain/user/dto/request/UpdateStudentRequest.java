@@ -10,6 +10,6 @@ public record UpdateStudentRequest(
         String name,
 
         @Schema(description = "새로운 학번", example = "1317")
-        @Pattern(regexp = "^[1-9]\\d{3}$" , message = "학반의 형식이 일치하지 않습니다.")
+        @Pattern(regexp = "^[1-9]\\d{3}$" , message = "학번의 형식이 일치하지 않습니다.")
         String classroom
 ) {}
