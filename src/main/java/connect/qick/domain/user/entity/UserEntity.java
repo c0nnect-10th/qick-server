@@ -36,11 +36,13 @@ public class UserEntity extends Base {
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "user_type", nullable = false)
+    @Builder.Default
     private UserType userType = UserType.USER;
 
     @JsonIgnore
     @Enumerated(value = EnumType.STRING)
     @Column(name = "user_status", nullable = false)
+    @Builder.Default
     private UserStatus userStatus = UserStatus.TEMP;
 
     @Column(unique = true)
@@ -61,7 +63,12 @@ public class UserEntity extends Base {
     @Column
     private int totalCount;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="teacher")
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            mappedBy="teacher"
+    )
+    @Builder.Default
     private List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
 
     public void updateUserProfile(UpdateStudentRequest request) {
@@ -85,6 +92,12 @@ public class UserEntity extends Base {
         this.grade = Integer.parseInt(classroom.substring(0, 1));
         this.classNumber = Integer.parseInt(classroom.substring(1, 2));
         this.number = Integer.parseInt(classroom.substring(2));
+    }
+
+    // 연관관계 편의 메서드
+    public void addVolunteerWork(VolunteerWorkEntity volunteerWork) {
+        this.volunteerWorks.add(volunteerWork);
+        volunteerWork.setTeacher(this);
     }
 
 }

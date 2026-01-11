@@ -11,6 +11,26 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEntity, Long> {
+/*
+SELECT *
+FROM VolunteerWork w
+LEFT JOIN VolunteerApplication a
+ON w.id = a.id
+ORDER BY a.id =: userId DESC, createdAt;
+* */
+
+    @Query("""
+    SELECT w
+    FROM VolunteerWorkEntity w
+    LEFT OUTER JOIN VolunteerApplicationEntity a
+    ORDER BY
+        CASE
+            WHEN a.student.id = :userId THEN 0
+            ELSE 1
+        END,
+        w.createdAt desc
+    """)
+    List<VolunteerWorkEntity> findAllSummaryByUserId(Long userId);
 
     @Query("""
     select new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(

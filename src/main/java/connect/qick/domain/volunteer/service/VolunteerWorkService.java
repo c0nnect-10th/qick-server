@@ -58,8 +58,9 @@ public class VolunteerWorkService {
                 .description(description)
                 .difficulty(difficulty)
                 .startTime(startTime)
-                .teacher(teacher)
                 .build();
+
+        teacher.addVolunteerWork(work);
         volunteerWorkRepository.save(work);
 
         return new CreateVolunteerWorkResponse(work.getId(), work.getStatus());

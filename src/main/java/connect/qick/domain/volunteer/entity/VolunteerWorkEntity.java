@@ -27,10 +27,10 @@ public class VolunteerWorkEntity extends Base {
     private String location;
 
     @Column(nullable = false)
-    private Integer maxParticipants;
+    private int maxParticipants;
 
     @Column(nullable = false)
-    private Integer currentParticipants;
+    private int currentParticipants;
 
     @Column(name="difficulty", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -41,7 +41,7 @@ public class VolunteerWorkEntity extends Base {
     private String description;
 
     @Column
-    private Integer points; // 굳이 필요할까? 난이도에 따라 포인트가 적용되는거라
+    private int points; // 굳이 필요할까? 난이도에 따라 포인트가 적용되는거라
 
     @Column(name="status")
     @Enumerated(EnumType.STRING)
@@ -50,14 +50,12 @@ public class VolunteerWorkEntity extends Base {
     @Column(nullable = false)
     private LocalDateTime startTime;
 
-//    @Column end_time는 딱히 필요가 없어서 지웠습니다
-//    private LocalDateTime end_time;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", nullable = false)
-    private UserEntity teacher; // 어케 불러올 것인지 찾아봐야할듯
+    private UserEntity teacher;
 
     @OneToMany(mappedBy = "volunteerWork", cascade = CascadeType.ALL)
+    @Builder.Default
     private List<VolunteerApplicationEntity> applications = new ArrayList<>();
 
 }
