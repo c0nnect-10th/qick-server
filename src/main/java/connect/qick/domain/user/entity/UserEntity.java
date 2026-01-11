@@ -19,7 +19,6 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -66,22 +65,21 @@ public class UserEntity extends Base {
 
     public void updateUserProfile(UpdateStudentRequest request) {
         if (request.name() != null) this.name = request.name();
-        if (request.classroom() != null) {
+        if (request.classroom() != null && !request.classroom().startsWith("0")) {
             String classroom = request.classroom();
-            if (classroom.startsWith("0") || classroom.length() != 4) {
-                throw new UserException(UserStatusCode.INVALID_CLASSROOM);
-            }
             this.grade = Integer.parseInt(classroom.substring(0, 1));
             this.classNumber = Integer.parseInt(classroom.substring(1, 2));
             this.number = Integer.parseInt(classroom.substring(2));
         }
     }
-    public void updateUserProfile(SignupStudentRequest request) {
-        this.name = request.name();
+    public void signupStudent(SignupStudentRequest request) {
         String classroom = request.classroom();
-        if (classroom.startsWith("0") || classroom.length() != 4) {
+        if (classroom.startsWith("0")) {
             throw new UserException(UserStatusCode.INVALID_CLASSROOM);
         }
+        this.name = request.name();
+        this.userType = UserType.STUDENT;
+        this.userStatus = UserStatus.ACTIVE;
         this.grade = Integer.parseInt(classroom.substring(0, 1));
         this.classNumber = Integer.parseInt(classroom.substring(1, 2));
         this.number = Integer.parseInt(classroom.substring(2));
