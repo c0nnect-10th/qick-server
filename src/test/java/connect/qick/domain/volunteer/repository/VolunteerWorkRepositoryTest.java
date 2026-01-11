@@ -8,18 +8,22 @@ import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+
+@SpringBootTest
 @Transactional
 class VolunteerWorkRepositoryTest {
 
@@ -31,6 +35,10 @@ class VolunteerWorkRepositoryTest {
 
     @Autowired
     private VolunteerApplicationRepository volunteerApplicationRepository;
+
+    public boolean compareVolunteerEntity(VolunteerWorkEntity o1, Long id) {
+        return o1.getApplications().stream().anyMatch(app -> app.getStudent().getId().equals(id));
+    }
 
     @Test
     @DisplayName("사용자가 신청한 volunteer를 우선 조회")
@@ -61,25 +69,43 @@ class VolunteerWorkRepositoryTest {
                     .points(10)
                     .status(WorkStatus.RECRUITING)
                     .startTime(LocalDateTime.now().plusDays(i))
-                    .teacher(teacher)
                     .build();
-
-            works.add(volunteerWorkRepository.save(work));
+            teacher.addVolunteerWork(work);
+            works.add(work);
         }
+        volunteerWorkRepository.saveAll(works);
 
+        List<VolunteerApplicationEntity> applications = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             VolunteerApplicationEntity app = VolunteerApplicationEntity.builder()
                     .volunteerWork(works.get(i*2))
                     .student(student)
                     .build();
-
-            volunteerApplicationRepository.save(app);
+            works.get(i*2).addApplication(app);
+            applications.add(app);
         }
+        volunteerApplicationRepository.saveAll(applications);
+
 
         List<VolunteerWorkEntity> result =
             volunteerWorkRepository.findAllSummaryByUserId(student.getId());
 
-        System.out.println(result.toString());
+        for (VolunteerWorkEntity work : result) {
+            System.out.println(work.getId().toString() + "and" + work.getCreatedAt());
+        }
+
+        assertThat(result)
+            .isSortedAccordingTo((o1, o2) -> {
+                // 참여여부 내림차순
+                boolean r1 = compareVolunteerEntity(o1, student.getId());
+                boolean r2 = compareVolunteerEntity(o2, student.getId());
+                if (r1 != r2) {
+                    return Boolean.compare(r2, r1);
+                }
+                // 생성일 내림차순
+                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+            });
+
 
     }
 

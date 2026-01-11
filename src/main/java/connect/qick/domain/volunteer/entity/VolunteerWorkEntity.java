@@ -58,4 +58,9 @@ public class VolunteerWorkEntity extends Base {
     @Builder.Default
     private List<VolunteerApplicationEntity> applications = new ArrayList<>();
 
+    public void addApplication(VolunteerApplicationEntity application) {
+        applications.add(application);
+        application.setVolunteerWork(this);
+    }
+
 }

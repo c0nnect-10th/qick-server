@@ -11,18 +11,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEntity, Long> {
-/*
-SELECT *
-FROM VolunteerWork w
-LEFT JOIN VolunteerApplication a
-ON w.id = a.id
-ORDER BY a.id =: userId DESC, createdAt;
-* */
 
     @Query("""
     SELECT w
     FROM VolunteerWorkEntity w
-    LEFT OUTER JOIN VolunteerApplicationEntity a
+    LEFT OUTER JOIN w.applications a
+    WHERE w.status = 'RECRUITING'
     ORDER BY
         CASE
             WHEN a.student.id = :userId THEN 0
@@ -33,6 +27,31 @@ ORDER BY a.id =: userId DESC, createdAt;
     List<VolunteerWorkEntity> findAllSummaryByUserId(Long userId);
 
     @Query("""
+    SELECT new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
+        e.id,
+        e.workName,
+        e.difficulty,
+        e.location,
+        t.name,
+        e.maxParticipants,
+        e.currentParticipants,
+        (CASE WHEN a.id = :googleId THEN true ELSE false END)
+    )
+    FROM VolunteerWorkEntity e
+    JOIN e.teacher t
+    LEFT JOIN e.applications a
+    WHERE e.status = 'RECRUITING'
+    ORDER BY
+        CASE\s
+            WHEN a.id = :googleId\s
+            THEN 1\s
+            ELSE 0
+        END DESC,
+        e.createdAt DESC
+    """)
+    List<VolunteerWorkSummaryResponse> findAllSummaryByGoogleId(String googleId);
+
+    @Query("""
     select new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
         e.id,
         e.workName,
@@ -40,7 +59,8 @@ ORDER BY a.id =: userId DESC, createdAt;
         e.location,
         t.name,
         e.maxParticipants,
-        e.currentParticipants
+        e.currentParticipants,
+        false
         )
     from VolunteerWorkEntity e
     join e.teacher t
