@@ -60,7 +60,7 @@ public class UserEntity extends Base {
     @Column
     private int totalCount;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="teacher")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy="teacher")
     private List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
 
     public void updateUserProfile(UpdateStudentRequest request) {
