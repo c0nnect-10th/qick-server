@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Transactional
 @Service
 public class VolunteerWorkService {
     private final VolunteerWorkRepository volunteerWorkRepository;;
@@ -35,10 +36,29 @@ public class VolunteerWorkService {
     private final UserService userService;
     private final PointService pointService;
 
+    /**
+     * 봉사활동 목록 조회
+     * @return 봉사활동 요약 리스트 반환
+     */
     public List<VolunteerWorkSummaryResponse> findAll() {
         return volunteerWorkRepository.findAllSummary();
     }
 
+    /**
+     * 특정 봉사활동 조회
+     * @param id 봉사활동 id
+     * @return 봉사활동 내용
+     */
+    public VolunteerWorkResponse findVolunteerWork(Long id) {
+        return VolunteerWorkResponse.from(findById(id));
+    }
+
+    /**
+     * 봉사활동 생성
+     * @param googleId
+     * @param request
+     * @return 봉사활동 Id, 봉사활동 상태
+     */
     public CreateVolunteerWorkResponse create(
             String googleId,
             CreateVolunteerWorkRequest request
@@ -52,36 +72,19 @@ public class VolunteerWorkService {
         return new CreateVolunteerWorkResponse(work.getId(), work.getStatus());
     }
 
-    public VolunteerWorkEntity findById(Long id) {
-        return volunteerWorkRepository.findById(id)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
-    }
-
-    public VolunteerWorkEntity findByCanceledId(Long id) {
-        Optional<VolunteerWorkEntity> opt = volunteerWorkRepository.findById(id);
-        if (opt.isPresent()) {
-            if (opt.get().getStatus() != WorkStatus.CANCELLED) {
-                return opt.get();
-            }
-            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
-        }
-        throw new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND);
-    }
-
-    public VolunteerWorkResponse findVolunteerWork(Long id) {
-        return VolunteerWorkResponse.from(findById(id));
-    }
-
+    /**
+     * 봉사활동 삭제
+     * @param workId
+     * @param googleId
+     */
     public void deleteVolunteerWork(Long workId, String googleId) {
-        VolunteerWorkEntity volunteerWork = findByCanceledId(workId);
-        if (!volunteerWork.getTeacher().getGoogleId().equals(googleId)) {
-            throw new AuthException(AuthStatusCode.ACCESS_DENIED);
-        }
-
-        volunteerWork.setStatus(WorkStatus.CANCELLED);
+        VolunteerWorkEntity work = volunteerWorkRepository.findByWorkId(workId)
+            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+        work.getTeacher().checkGoogleId(googleId);
+        work.cancel();
     }
 
-    @Transactional
+
     public CompleteVolunteerWorkResponse completeVolunteerWork(
             Long workId,
             List<Long> attendedStudentIds,
@@ -89,11 +92,7 @@ public class VolunteerWorkService {
     ) {
         // 봉사활동 조회
         VolunteerWorkEntity work = findById(workId);
-
-        // 권한 확인 (본인이 생성한 봉사활동인지)
-        if (!work.getTeacher().getGoogleId().equals(googleId)) {
-            throw new AuthException(AuthStatusCode.ACCESS_DENIED);
-        }
+        work.getTeacher().checkGoogleId(googleId);
 
         // 상태 확인 (ONGOING 상태여야 완료 가능)
         if (work.getStatus() != WorkStatus.ONGOING) {
@@ -101,8 +100,7 @@ public class VolunteerWorkService {
         }
 
         // 해당 봉사활동의 모든 신청 내역 조회
-        List<VolunteerApplicationEntity> applications =
-                applicationRepository.findAllByVolunteerWorkId(workId);
+        List<VolunteerApplicationEntity> applications = work.getApplications();
 
         int attendedCount = 0;
         int noShowCount = 0;
@@ -110,24 +108,18 @@ public class VolunteerWorkService {
         // 출석 체크 및 상태 업데이트
         for (VolunteerApplicationEntity application : applications) {
             if (application.getStatus() == ApplicationStatus.APPLIED) {
-                Long studentId = application.getStudent().getId();
                 UserEntity student = application.getStudent();
 
-                if (attendedStudentIds.contains(studentId)) {
+                if (attendedStudentIds.contains(student.getId())) {
                     // 참여한 학생
-                    application.setStatus(ApplicationStatus.COMPLETED);
-                    application.setIsAttended(true);
-                    application.setCompletedAt(LocalDateTime.now());
-
+                    application.complete();
                     // 포인트 지급
                     pointService.earnPoints(student, work);
 
                     attendedCount++;
                 } else {
                     // 미참여 학생
-                    application.setStatus(ApplicationStatus.NO_SHOW);
-                    application.setIsAttended(false);
-
+                    application.notComplete();
                     // 포인트 차감
                     pointService.deductPoints(student, work);
 
@@ -136,12 +128,8 @@ public class VolunteerWorkService {
             }
         }
 
-        // 신청 내역 저장
-        applicationRepository.saveAll(applications);
-
         // 봉사활동 상태를 COMPLETED로 변경
-        work.setStatus(WorkStatus.COMPLETED);
-        volunteerWorkRepository.save(work);
+        work.complete();
 
         return new CompleteVolunteerWorkResponse(
                 work.getId(),
@@ -179,6 +167,11 @@ public class VolunteerWorkService {
         return applications.stream()
                 .map(ApplicationStudentResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    public VolunteerWorkEntity findById(Long id) {
+        return volunteerWorkRepository.findById(id)
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
     }
 
 }

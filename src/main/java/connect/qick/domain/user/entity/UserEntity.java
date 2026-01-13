@@ -1,6 +1,8 @@
 package connect.qick.domain.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import connect.qick.domain.auth.exception.AuthException;
+import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.enums.UserStatus;
@@ -71,6 +73,14 @@ public class UserEntity extends Base {
     @Builder.Default
     private List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
 
+
+    //==비즈니스 로직==//
+    public void checkGoogleId(String googleId) {
+        if (!this.googleId.equals(googleId)) {
+            throw new AuthException(AuthStatusCode.ACCESS_DENIED);
+        }
+    }
+
     public void updateUserProfile(UpdateStudentRequest request) {
         if (request.name() != null) this.name = request.name();
         if (request.classroom() != null) {
@@ -95,6 +105,9 @@ public class UserEntity extends Base {
     }
 
 
+    public void addPoint(VolunteerWorkEntity work) {
+
+    }
 }
 
 

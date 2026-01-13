@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEntity, Long> {
 
@@ -50,6 +51,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     """)
     List<VolunteerWorkSummaryResponse> findAllSummaryByGoogleId(String googleId);
 
+    //모집 중인 봉사활동 목록 조회
     @Query("""
     select new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
         e.id,
@@ -67,6 +69,14 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     order by e.createdAt desc
     """)
     List<VolunteerWorkSummaryResponse> findAllSummary();
+
+    //삭제되지 않은 봉사활동 조회
+    @Query("""
+    SELECT e
+    FROM VolunteerWorkEntity e
+    WHERE e.id = :workId and e.status != 'CANCELLED'
+    """)
+    Optional<VolunteerWorkEntity> findByWorkId(@Param("workId")Long workId);
 
     // 스케줄러용 모집중인 봉사활동 조회 하는거
     List<VolunteerWorkEntity> findByStatusAndStartTimeBefore(

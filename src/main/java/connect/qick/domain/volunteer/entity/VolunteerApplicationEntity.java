@@ -54,4 +54,23 @@ public class VolunteerApplicationEntity extends Base {
             status = ApplicationStatus.APPLIED;
         }
     }
+
+    //==비즈니스 로직==//
+
+    /**
+     * 봉사활동 완료
+     */
+    public void complete() {
+        status = ApplicationStatus.COMPLETED;
+        isAttended = true;
+        completedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 봉사활동 미참여
+     */
+    public void notComplete() {
+        status = ApplicationStatus.NO_SHOW;
+        isAttended = false;
+    }
 }

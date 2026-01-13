@@ -5,6 +5,8 @@ import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
+import connect.qick.domain.volunteer.exception.VolunteerException;
+import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +14,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static connect.qick.domain.volunteer.enums.ApplicationStatus.*;
 
 @Entity
 @Table(name="volunteer_work")
@@ -52,16 +56,23 @@ public class VolunteerWorkEntity extends Base {
     private LocalDateTime startTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id", nullable = false)
+    @JoinColumn(name = "teacher_id")
     private UserEntity teacher;
 
     @OneToMany(mappedBy = "volunteerWork", cascade = CascadeType.ALL)
     @Builder.Default
     private List<VolunteerApplicationEntity> applications = new ArrayList<>();
 
+
+    //==연관관계 편의 메서드==//
     public void addApplication(VolunteerApplicationEntity application) {
         applications.add(application);
         application.setVolunteerWork(this);
+    }
+
+    public void removeApplication(VolunteerApplicationEntity application) {
+        applications.remove(application);
+        application.setVolunteerWork(null);
     }
 
     public void setTeacher(UserEntity teacher) {
@@ -69,7 +80,31 @@ public class VolunteerWorkEntity extends Base {
         teacher.getVolunteerWorks().add(this);
     }
 
+    //==비즈니스 메서드==//
+    /**
+     * 봉사활동 취소
+     * 봉사활동을 만든 사용자가 맞는지 확인 후 봉사활동을 취소합니다.
+     */
+    public void cancel() {
+        if (status != WorkStatus.RECRUITING) {
+            throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
+        }
+
+        status = WorkStatus.CANCELLED;
+        teacher.getVolunteerWorks().remove(this);
+    }
+
+    public void complete() {
+        status = WorkStatus.COMPLETED;
+    }
+
     //==생성 메서드==//
+    /**
+     * 봉사활동 생성
+     * @param teacher 봉사활동을 생성하는 유저(선생님)
+     * @param request requestDTO
+     * @return
+     */
     public static VolunteerWorkEntity createVolunteerWork(UserEntity teacher, CreateVolunteerWorkRequest request) {
         VolunteerWorkEntity work = VolunteerWorkEntity.builder()
                 .workName(request.name())

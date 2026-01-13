@@ -8,9 +8,18 @@ import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
+import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
+import connect.qick.domain.volunteer.enums.WorkStatus;
+import connect.qick.domain.volunteer.exception.VolunteerException;
+import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
+import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +27,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,17 +44,54 @@ class VolunteerWorkServiceTest {
     private VolunteerWorkRepository volunteerWorkRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private VolunteerApplicationRepository volunteerApplicationRepository;
+
+    private final List<UserEntity> student = new ArrayList<>();
+    private final List<UserEntity> teacher = new ArrayList<>();
+    private final List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
+    private final List<VolunteerApplicationEntity> volunteerApplications = new ArrayList<>();
+
+
+    @BeforeEach
+    void setUp() {
+        teacher.add(userRepository.save(
+            UserEntity.builder()
+                .userType(UserType.TEACHER)
+                .userStatus(UserStatus.ACTIVE)
+                .googleId("1234")
+                .name("test1")
+                .build()
+        ));
+
+        for(int i =0; i < 5; i++) {
+            student.add(userRepository.save(
+                UserEntity.builder()
+                    .userType(UserType.TEACHER)
+                    .userStatus(UserStatus.ACTIVE)
+                    .googleId("testGoogleId"+i)
+                    .name("testUser"+i)
+                    .build()
+            ));
+        }
+
+        VolunteerWorkEntity work = VolunteerWorkEntity.builder()
+                .workName("봉사테스트1")
+                .maxParticipants(5)
+                .location("lol1")
+                .description("1")
+                .difficulty(WorkDifficulty.HARD)
+                .status(WorkStatus.RECRUITING)
+                .startTime(LocalDateTime.now())
+                .build();
+        work.setTeacher(teacher.get(0));
+        volunteerWorks.add(volunteerWorkRepository.save(work));
+    }
 
     @Test
     @DisplayName("봉사활동 생성 시 사용자에게 봉사활동이 정상적으로 추가 확인")
     void createVolunteerWork() {
-        UserEntity user = userRepository.save(
-                UserEntity.builder()
-                    .userType(UserType.TEACHER)
-                    .userStatus(UserStatus.ACTIVE)
-                    .googleId("1234")
-                    .build()
-            );
+        UserEntity user = teacher.get(0);
 
         String workName = "봉사제목1";
         int maxParticipants = 5;
@@ -67,4 +116,67 @@ class VolunteerWorkServiceTest {
 
     }
 
+
+    @Test
+    @DisplayName("봉사활동 삭제")
+    void deleteVolunteerWork() throws Exception {
+        VolunteerWorkEntity work = volunteerWorks.stream()
+            .findFirst()
+            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+        assertThat(work.getTeacher().getVolunteerWorks().size())
+            .isEqualTo(1);
+
+        UserEntity user = work.getTeacher();
+        String googleId = user.getGoogleId();
+        volunteerWorkService.deleteVolunteerWork(work.getId(), googleId);
+
+        assertThat(work.getStatus())
+            .isEqualTo(WorkStatus.CANCELLED);
+        assertThat(user.getVolunteerWorks())
+            .doesNotContain(work);
+
+    }
+
+    @Test
+    @DisplayName("봉사활동 완료")
+    void completeVolunteerWork() {
+        VolunteerWorkEntity work = volunteerWorkRepository.save(
+            VolunteerWorkEntity.builder()
+                .workName("봉사테스트1")
+                .maxParticipants(5)
+                .location("lol1")
+                .description("1")
+                .difficulty(WorkDifficulty.HARD)
+                .status(WorkStatus.ONGOING)
+                .startTime(LocalDateTime.now())
+                .teacher(teacher.get(0))
+                .build()
+        );
+
+        for (int i=0; i < 3; i++) {
+            VolunteerApplicationEntity application = VolunteerApplicationEntity.builder()
+                    .appliedAt(LocalDateTime.now())
+                    .status(ApplicationStatus.APPLIED)
+                    .volunteerWork(work)
+                    .student(student.get(i))
+                    .build();
+            work.addApplication(application);
+            volunteerApplications.add(
+                volunteerApplicationRepository.save(application)
+            );
+        }
+
+        List<Long> attendedIds = student.stream().map(UserEntity::getId).collect(Collectors.toList());
+        attendedIds.remove(2);
+        volunteerWorkService.completeVolunteerWork(work.getId(), attendedIds, work.getTeacher().getGoogleId());
+
+        assertThat(work.getStatus())
+            .isEqualTo(WorkStatus.COMPLETED);
+        assertThat(volunteerApplications)
+            .allMatch(a ->
+                    (attendedIds.contains(a.getStudent().getId())) ?
+                    a.getStatus() == ApplicationStatus.COMPLETED :
+                    a.getStatus() == ApplicationStatus.NO_SHOW
+            );
+    }
 }
