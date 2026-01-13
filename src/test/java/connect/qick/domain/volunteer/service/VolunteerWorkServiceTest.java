@@ -5,7 +5,11 @@ import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.repository.UserRepository;
 import connect.qick.domain.user.service.UserService;
+import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
+import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
+import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
+import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,7 +28,8 @@ class VolunteerWorkServiceTest {
 
     @Autowired
     private VolunteerWorkService volunteerWorkService;
-
+    @Autowired
+    private VolunteerWorkRepository volunteerWorkRepository;
     @Autowired
     private UserRepository userRepository;
 
@@ -46,12 +51,19 @@ class VolunteerWorkServiceTest {
         WorkDifficulty difficulty = WorkDifficulty.NORMAL;
         LocalDateTime startTime = LocalDateTime.now();
         String googleId = user.getGoogleId();
+        CreateVolunteerWorkRequest request = new CreateVolunteerWorkRequest(workName, maxParticipants, location, description, difficulty, startTime);
 
-        volunteerWorkService.create(workName, maxParticipants, location, description, difficulty, startTime, googleId);
+        CreateVolunteerWorkResponse response = volunteerWorkService.create(googleId, request);
 
 
         assertThat(user.getVolunteerWorks().size())
                 .isEqualTo(1);
+
+        assertThat(volunteerWorkRepository.findById(response.getId()))
+            .isPresent()
+            .get()
+            .extracting(w -> w.getWorkName())
+            .isEqualTo(workName);
 
     }
 

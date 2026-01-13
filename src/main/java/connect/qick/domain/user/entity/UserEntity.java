@@ -94,11 +94,6 @@ public class UserEntity extends Base {
         this.number = Integer.parseInt(classroom.substring(2));
     }
 
-    // 연관관계 편의 메서드
-    public void addVolunteerWork(VolunteerWorkEntity volunteerWork) {
-        this.volunteerWorks.add(volunteerWork);
-        volunteerWork.setTeacher(this);
-    }
 
 }
 

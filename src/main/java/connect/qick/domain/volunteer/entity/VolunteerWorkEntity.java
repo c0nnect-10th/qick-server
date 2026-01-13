@@ -2,6 +2,7 @@ package connect.qick.domain.volunteer.entity;
 
 
 import connect.qick.domain.user.entity.UserEntity;
+import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.global.entity.Base;
@@ -61,6 +62,28 @@ public class VolunteerWorkEntity extends Base {
     public void addApplication(VolunteerApplicationEntity application) {
         applications.add(application);
         application.setVolunteerWork(this);
+    }
+
+    public void setTeacher(UserEntity teacher) {
+        this.teacher = teacher;
+        teacher.getVolunteerWorks().add(this);
+    }
+
+    //==생성 메서드==//
+    public static VolunteerWorkEntity createVolunteerWork(UserEntity teacher, CreateVolunteerWorkRequest request) {
+        VolunteerWorkEntity work = VolunteerWorkEntity.builder()
+                .workName(request.name())
+                .maxParticipants(request.maxParticipants())
+                .currentParticipants(0)
+                .location(request.location())
+                .status(WorkStatus.RECRUITING)
+                .description(request.description())
+                .difficulty(request.difficulty())
+                .startTime(request.startTime())
+                .build();
+
+        work.setTeacher(teacher);
+        return work;
     }
 
 }

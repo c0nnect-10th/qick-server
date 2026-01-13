@@ -34,8 +34,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         e.location,
         t.name,
         e.maxParticipants,
-        e.currentParticipants,
-        (CASE WHEN a.id = :googleId THEN true ELSE false END)
+        e.currentParticipants
     )
     FROM VolunteerWorkEntity e
     JOIN e.teacher t
@@ -59,8 +58,8 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         e.location,
         t.name,
         e.maxParticipants,
-        e.currentParticipants,
-        false
+        e.currentParticipants
+
         )
     from VolunteerWorkEntity e
     join e.teacher t

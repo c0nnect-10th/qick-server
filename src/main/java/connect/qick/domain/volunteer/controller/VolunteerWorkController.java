@@ -192,16 +192,9 @@ public class VolunteerWorkController {
             @RequestBody @Valid CreateVolunteerWorkRequest request
     ) {
         return ResponseEntity.ok(
-                ApiResponse.ok(
-                        volunteerWorkService.create(
-                                request.name(),
-                                request.maxParticipants(),
-                                request.location(),
-                                request.description(),
-                                request.difficulty(),
-                                request.startTime(),
-                                userDetails.getGoogleId())
-                )
+            ApiResponse.ok(
+                volunteerWorkService.create(userDetails.getUsername(), request)
+            )
         );
     }
 

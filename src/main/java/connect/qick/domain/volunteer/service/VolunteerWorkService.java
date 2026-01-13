@@ -7,6 +7,7 @@ import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
+import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.response.*;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
@@ -39,28 +40,13 @@ public class VolunteerWorkService {
     }
 
     public CreateVolunteerWorkResponse create(
-            String workName,
-            int maxParticipants,
-            String location,
-            String description,
-            WorkDifficulty difficulty,
-            LocalDateTime startTime,
-            String googleId
+            String googleId,
+            CreateVolunteerWorkRequest request
     ) {
         UserEntity teacher =  userService.getUserByGoogleId(googleId)
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-        VolunteerWorkEntity work = VolunteerWorkEntity.builder()
-                .workName(workName)
-                .maxParticipants(maxParticipants)
-                .currentParticipants(0)
-                .location(location)
-                .status(WorkStatus.RECRUITING)
-                .description(description)
-                .difficulty(difficulty)
-                .startTime(startTime)
-                .build();
 
-        teacher.addVolunteerWork(work);
+        VolunteerWorkEntity work = VolunteerWorkEntity.createVolunteerWork(teacher, request);
         volunteerWorkRepository.save(work);
 
         return new CreateVolunteerWorkResponse(work.getId(), work.getStatus());
