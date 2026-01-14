@@ -32,10 +32,8 @@ import java.util.stream.Collectors;
 @Service
 public class VolunteerWorkService {
     private final VolunteerWorkRepository volunteerWorkRepository;;
-    private final VolunteerApplicationRepository applicationRepository;
     private final UserService userService;
     private final PointService pointService;
-    private final VolunteerApplicationRepository volunteerApplicationRepository;
 
     /**
      * 봉사활동 목록 조회
@@ -85,7 +83,13 @@ public class VolunteerWorkService {
         work.cancel();
     }
 
-
+    /**
+     * 봉사활동 종료
+     * @param workId 봉사활동 Id
+     * @param attendedStudentIds 참석한 유저(학생) Id
+     * @param googleId 유저(선생님) 구글 Id
+     * @return CompleteVolunteerWorkResponse
+     */
     public CompleteVolunteerWorkResponse completeVolunteerWork(
             Long workId,
             List<Long> attendedStudentIds,
@@ -140,19 +144,28 @@ public class VolunteerWorkService {
         );
     }
 
-    // 선생님이 생성한 봉사활동 목록 조회 (상태별)
+    /**
+     * 선생님이 생성한 봉사활동 목록 조회 (상태별)
+     * @param googleId 유저(선생님) 구글 Id
+     * @param status 봉사활동 상태
+     * @return List<VolunteerWorkEntity>
+     */
     public List<VolunteerWorkEntity> getMyVolunteerWorks(String googleId, WorkStatus status) {
         UserEntity teacher = userService.getUserByGoogleId(googleId)
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
 
-        if (status != null) {
-            return volunteerWorkRepository.findByTeacherIdAndStatus(teacher.getId(), status);
-        } else {
+        if (status == null) {
             return volunteerWorkRepository.findAllByTeacherId(teacher.getId());
         }
+        return volunteerWorkRepository.findByTeacherIdAndStatus(teacher.getId(), status);
     }
 
-    // 특정 봉사를 신청한 모든 학생 목록 조회
+    /**
+     * 특정 봉사를 신청한 모든 학생 목록 조회
+     * @param workId 봉사활동 Id
+     * @param googleId 유저(선생님) Id
+     * @return List<ApplicationStudentResponse>
+     */
     public List<ApplicationStudentResponse> getApplicationStudents(Long workId, String googleId) {
         // 봉사활동 조회
         VolunteerWorkEntity work = findById(workId);

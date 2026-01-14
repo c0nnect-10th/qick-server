@@ -77,17 +77,20 @@ class VolunteerWorkServiceTest {
             ));
         }
 
-        VolunteerWorkEntity work = VolunteerWorkEntity.builder()
-                .workName("봉사테스트1")
-                .maxParticipants(5)
-                .location("lol1")
-                .description("1")
-                .difficulty(WorkDifficulty.HARD)
-                .status(WorkStatus.RECRUITING)
-                .startTime(LocalDateTime.now())
-                .build();
-        work.setTeacher(teacher.get(0));
-        volunteerWorks.add(volunteerWorkRepository.save(work));
+        for (int i =0; i < 10; i++) {
+            VolunteerWorkEntity work = VolunteerWorkEntity.builder()
+                    .workName("봉사테스트"+i)
+                    .maxParticipants(5)
+                    .location("lol"+i)
+                    .description(""+i)
+                    .difficulty(WorkDifficulty.HARD)
+                    .status(WorkStatus.RECRUITING)
+                    .startTime(LocalDateTime.now())
+                    .build();
+            work.setTeacher(teacher.get(0));
+            volunteerWorks.add(volunteerWorkRepository.save(work));
+        }
+
     }
 
     @Test
@@ -219,5 +222,18 @@ class VolunteerWorkServiceTest {
                 .isEqualTo(ApplicationStatus.APPLIED);
         }
 
+    }
+
+    @Test
+    @DisplayName("선생님 봉사활동 조회")
+    void getMyVolunteerWork() {
+        StopWatch stopWatch = new StopWatch();
+        UserEntity user = teacher.get(0);
+
+        stopWatch.start();
+        volunteerWorkService.getMyVolunteerWorks(user.getGoogleId(), null);
+        stopWatch.stop();
+
+        System.out.println(stopWatch.prettyPrint());
     }
 }
