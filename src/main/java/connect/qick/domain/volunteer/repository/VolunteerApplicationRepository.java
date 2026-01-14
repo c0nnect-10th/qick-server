@@ -1,6 +1,8 @@
 package connect.qick.domain.volunteer.repository;
 
+import connect.qick.domain.volunteer.dto.response.ApplicationStudentResponse;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -13,6 +15,24 @@ public interface VolunteerApplicationRepository extends JpaRepository<VolunteerA
 
     // 특정 학생의 특정 봉사활동 신청 내역 조회
     Optional<VolunteerApplicationEntity> findByVolunteerWorkIdAndStudentId(Long workId, Long studentId);
+
+    //특정 봉사의 신청자 목록
+    @Query("""
+    SELECT new connect.qick.domain.volunteer.dto.response.ApplicationStudentResponse(
+        a.id,
+        s.id,
+        s.name,
+        s.grade,
+        s.classNumber,
+        s.number,
+        a.status,
+        a.appliedAt
+        )
+    FROM VolunteerApplicationEntity a
+    JOIN a.student s
+    WHERE a.volunteerWork.id =:workId
+    """)
+    List<ApplicationStudentResponse> findAllStudents(@Param("workId") Long workId);
 
     // 특정 학생의 모든 신청 내역 조회
     @Query("""

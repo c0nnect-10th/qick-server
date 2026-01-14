@@ -35,6 +35,7 @@ public class VolunteerWorkService {
     private final VolunteerApplicationRepository applicationRepository;
     private final UserService userService;
     private final PointService pointService;
+    private final VolunteerApplicationRepository volunteerApplicationRepository;
 
     /**
      * 봉사활동 목록 조회
@@ -151,20 +152,16 @@ public class VolunteerWorkService {
         }
     }
 
+    // 특정 봉사를 신청한 모든 학생 목록 조회
     public List<ApplicationStudentResponse> getApplicationStudents(Long workId, String googleId) {
         // 봉사활동 조회
         VolunteerWorkEntity work = findById(workId);
-
-        // 권한 확인 (본인이 생성한 봉사활동인지)
-        if (!work.getTeacher().getGoogleId().equals(googleId)) {
-            throw new AuthException(AuthStatusCode.ACCESS_DENIED);
-        }
+        work.getTeacher().checkGoogleId(googleId);
 
         // 신청자 목록 조회
-        List<VolunteerApplicationEntity> applications =
-                applicationRepository.findAllByVolunteerWorkId(workId);
-
+        List<VolunteerApplicationEntity> applications = work.getApplications();
         return applications.stream()
+                .filter(application -> application.getStatus() == ApplicationStatus.APPLIED)
                 .map(ApplicationStudentResponse::from)
                 .collect(Collectors.toList());
     }

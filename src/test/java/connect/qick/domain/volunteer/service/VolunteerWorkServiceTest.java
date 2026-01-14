@@ -6,6 +6,7 @@ import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.repository.UserRepository;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
+import connect.qick.domain.volunteer.dto.response.ApplicationStudentResponse;
 import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkResponse;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -64,7 +66,7 @@ class VolunteerWorkServiceTest {
                 .build()
         ));
 
-        for(int i =0; i < 5; i++) {
+        for(int i =0; i < 10; i++) {
             student.add(userRepository.save(
                 UserEntity.builder()
                     .userType(UserType.TEACHER)
@@ -178,5 +180,44 @@ class VolunteerWorkServiceTest {
                     a.getStatus() == ApplicationStatus.COMPLETED :
                     a.getStatus() == ApplicationStatus.NO_SHOW
             );
+    }
+
+    @Test
+    @DisplayName("봉사활동 신청 학생")
+    void getApplicationStudents() {
+        StopWatch stopWatch = new StopWatch();
+        VolunteerWorkEntity work = volunteerWorks.get(0);
+        for (int i = 0; i < 10; i++) {
+            VolunteerApplicationEntity application = VolunteerApplicationEntity.builder()
+                    .appliedAt(LocalDateTime.now())
+                    .status(ApplicationStatus.APPLIED)
+                    .volunteerWork(work)
+                    .student(student.get(i))
+                    .build();
+            work.addApplication(application);
+            volunteerApplications.add(
+                    volunteerApplicationRepository.save(application)
+            );
+
+
+
+
+        }
+
+        stopWatch.start();
+        List<ApplicationStudentResponse> responses = volunteerWorkService.getApplicationStudents(work.getId(), work.getTeacher().getGoogleId());
+        stopWatch.stop();
+
+        System.out.println("속도를 볼까요: " + stopWatch.prettyPrint());
+
+        for (int i = 0; i < responses.size(); i++) {
+            assertThat(responses.get(i).getApplicationId())
+                .isEqualTo(volunteerApplications.get(i).getId());
+            assertThat(responses.get(i).getStudentId())
+                .isEqualTo(volunteerApplications.get(i).getStudent().getId());
+            assertThat(responses.get(i).getStatus())
+                .isEqualTo(ApplicationStatus.APPLIED);
+        }
+
     }
 }
