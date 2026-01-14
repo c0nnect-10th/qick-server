@@ -77,6 +77,7 @@ public class VolunteerWorkEntity extends Base {
     }
 
     public void setTeacher(UserEntity teacher) {
+        //TODO: Teacher인지 확인하는 코드 + Student확인코드
         this.teacher = teacher;
         teacher.getVolunteerWorks().add(this);
     }

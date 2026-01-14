@@ -28,28 +28,21 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     List<VolunteerWorkEntity> findAllSummaryByUserId(Long userId);
 
     @Query("""
-    SELECT new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
-        e.id,
-        e.workName,
-        e.difficulty,
-        e.location,
-        t.name,
-        e.maxParticipants,
-        e.currentParticipants
-    )
-    FROM VolunteerWorkEntity e
-    JOIN e.teacher t
-    LEFT JOIN e.applications a
-    WHERE e.status = 'RECRUITING'
+    SELECT w
+    FROM VolunteerWorkEntity w
     ORDER BY
-        CASE\s
-            WHEN a.id = :googleId\s
-            THEN 1\s
-            ELSE 0
-        END DESC,
-        e.createdAt DESC
+    (
+        CASE WHEN
+        EXISTS(
+            SELECT 1
+            FROM VolunteerApplicationEntity a
+            WHERE a.volunteerWork = w and
+                a.status = 'APPLIED'
+        )
+        THEN 1 ELSE 0 END
+    )
     """)
-    List<VolunteerWorkSummaryResponse> findAllSummaryByGoogleId(String googleId);
+    List<VolunteerWorkEntity> findAllSummaryOrderByApplications(String googleId);
 
     //모집 중인 봉사활동 목록 조회
     @Query("""

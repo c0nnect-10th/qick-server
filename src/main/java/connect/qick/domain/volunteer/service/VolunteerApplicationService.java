@@ -65,14 +65,24 @@ public class VolunteerApplicationService {
         }
     }
 
+    /**
+     * 사용자(학생)가 참여한 봉사활동을 취소
+     * @param applicationId 참여한 봉사활동 내역 Id
+     * @param googleId 유저(학생)의 구글 Id
+     * @param cancelReason 취소 사유
+     */
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
-        // 신청 내역 조회
         VolunteerApplicationEntity application = findById(applicationId);
         application.validateStudent(googleId);
 
         application.cancel(cancelReason);
     }
 
+    /**
+     * 사용자(학생)가 참여한 봉사활동 목록 조회
+     * @param googleId 유저(학생)의 구글 Id
+     * @return List<MyApplicationResponse>
+     */
     public List<MyApplicationResponse> getMyApplications(String googleId) {
         List<VolunteerApplicationEntity> applications =
                 applicationRepository.findAllByGoogleId(googleId);
@@ -82,6 +92,13 @@ public class VolunteerApplicationService {
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * 봉사활동 참여의 세부 사항
+     * @param applicationId 참여한 봉사활동 내역 Id
+     * @param googleId 사용자(학생)의 구글 Id
+     * @return ApplicationResponse
+     */
     public ApplicationResponse getApplicationDetail(Long applicationId, String googleId) {
         VolunteerApplicationEntity application = findById(applicationId);
         application.validateStudent(googleId); //TODO: applicationId, googleId 함께 조회하도록

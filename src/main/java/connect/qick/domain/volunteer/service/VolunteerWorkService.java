@@ -34,6 +34,10 @@ public class VolunteerWorkService {
         return volunteerWorkRepository.findAllSummary();
     }
 
+    public List<VolunteerWorkSummaryResponse> findAllSummary() {
+        return volunteerWorkRepository.findAllSummary();
+    }
+
     /**
      * 특정 봉사활동 조회
      * @param id 봉사활동 id
