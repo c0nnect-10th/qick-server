@@ -1,8 +1,6 @@
 package connect.qick.domain.volunteer.service;
 
 import connect.qick.domain.user.entity.UserEntity;
-import connect.qick.domain.user.exception.UserException;
-import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.response.ApplicationResponse;
 import connect.qick.domain.volunteer.dto.response.MyApplicationResponse;
@@ -22,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class VolunteerApplicationService {
 
@@ -29,7 +28,6 @@ public class VolunteerApplicationService {
     private final VolunteerWorkRepository volunteerWorkRepository;
     private final UserService userService;
 
-    @Transactional
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
         UserEntity student = userService.getUserByGoogleId(googleId);
@@ -67,40 +65,17 @@ public class VolunteerApplicationService {
         }
     }
 
-    @Transactional
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
         // 신청 내역 조회
-        VolunteerApplicationEntity application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
+        VolunteerApplicationEntity application = findById(applicationId);
+        application.validateStudent(googleId);
 
-        // 본인의 신청인지 확인
-        UserEntity student = userService.getUserByGoogleId(googleId);
-
-        if (!application.getStudent().getId().equals(student.getId())) {
-            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
-        }
-
-        // 이미 취소되었거나 완료된 경우
-        if (application.getStatus() != ApplicationStatus.APPLIED) {
-            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
-        }
-
-        // 취소 처리
-        application.setStatus(ApplicationStatus.CANCELLED);
-        application.setCancelReason(cancelReason);
-        application.setCancelledAt(LocalDateTime.now());
-        applicationRepository.save(application);
-
-        // 현재 참여 인원 감소
-        VolunteerWorkEntity work = application.getVolunteerWork();
-        work.setCurrentParticipants(Math.max(0, work.getCurrentParticipants() - 1));
-        volunteerWorkRepository.save(work);
+        application.cancel(cancelReason);
     }
 
     public List<MyApplicationResponse> getMyApplications(String googleId) {
-        UserEntity student = userService.getUserByGoogleId(googleId);
         List<VolunteerApplicationEntity> applications =
-                applicationRepository.findAllByStudentId(student.getId());
+                applicationRepository.findAllByGoogleId(googleId);
 
         return applications.stream()
                 .map(MyApplicationResponse::from)
@@ -108,16 +83,14 @@ public class VolunteerApplicationService {
     }
 
     public ApplicationResponse getApplicationDetail(Long applicationId, String googleId) {
-        VolunteerApplicationEntity application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
-
-        // 본인의 신청인지 확인
-        UserEntity student = userService.getUserByGoogleId(googleId);
-
-        if (!application.getStudent().getId().equals(student.getId())) {
-            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
-        }
+        VolunteerApplicationEntity application = findById(applicationId);
+        application.validateStudent(googleId); //TODO: applicationId, googleId 함께 조회하도록
 
         return ApplicationResponse.from(application);
+    }
+
+    public VolunteerApplicationEntity findById(Long applicationId) {
+        return applicationRepository.findById(applicationId)
+            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
     }
 }

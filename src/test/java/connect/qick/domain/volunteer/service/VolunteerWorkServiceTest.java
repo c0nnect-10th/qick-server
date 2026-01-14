@@ -231,9 +231,10 @@ class VolunteerWorkServiceTest {
         UserEntity user = teacher.get(0);
 
         stopWatch.start();
-        volunteerWorkService.getMyVolunteerWorks(user.getGoogleId(), null);
+        List<VolunteerWorkEntity> results = volunteerWorkService.getMyVolunteerWorks(user.getGoogleId(), null);
         stopWatch.stop();
 
-        System.out.println(stopWatch.prettyPrint());
+        assertThat(results)
+            .allMatch(w -> w.getTeacher().getGoogleId().equals(user.getGoogleId()));
     }
 }

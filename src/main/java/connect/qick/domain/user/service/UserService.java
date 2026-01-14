@@ -14,6 +14,7 @@ import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,10 @@ public class UserService {
     public UserEntity getUserByGoogleId(String googleId) {
         return userRepository.findByGoogleId(googleId)
             .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+    }
+
+    public Optional<UserEntity> getUser(String googleId) {
+        return userRepository.findByGoogleId(googleId);
     }
 
     public UserResponse getUserInfo(String googleId) {

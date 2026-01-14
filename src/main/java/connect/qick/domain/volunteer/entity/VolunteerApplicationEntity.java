@@ -2,6 +2,8 @@ package connect.qick.domain.volunteer.entity;
 
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
+import connect.qick.domain.volunteer.exception.VolunteerException;
+import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
@@ -56,6 +58,9 @@ public class VolunteerApplicationEntity extends Base {
     }
 
     //==비즈니스 로직==//
+    public void validateStudent(String googleId) {
+        this.student.checkGoogleId(googleId);
+    }
 
     /**
      * 봉사활동 완료
@@ -87,4 +92,17 @@ public class VolunteerApplicationEntity extends Base {
             notComplete();
         }
     }
+
+    public void cancel(String cancelReason) {
+        if (this.status != ApplicationStatus.APPLIED) {
+            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
+        }
+
+        this.status = ApplicationStatus.CANCELLED;
+        this.cancelReason = cancelReason;
+        this.cancelledAt = LocalDateTime.now();
+
+        this.volunteerWork.cancelApplication();
+    }
+
 }

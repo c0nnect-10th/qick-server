@@ -66,4 +66,11 @@ public interface VolunteerApplicationRepository extends JpaRepository<VolunteerA
 
     // 중복 신청 체크
     boolean existsByVolunteerWorkIdAndStudentIdAndStatus(Long workId, Long studentId, ApplicationStatus status);
+
+    @Query("""
+    SELECT a
+    FROM VolunteerApplicationEntity a
+    WHERE a.student.googleId =:googleId
+    """)
+    List<VolunteerApplicationEntity> findAllByGoogleId(String googleId);
 }

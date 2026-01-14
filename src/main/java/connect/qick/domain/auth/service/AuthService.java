@@ -64,8 +64,7 @@ public class AuthService {
         if (!jwtExtract.checkTokenType(claims, TokenType.REFRESH)) {
             throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
         }
-        UserEntity user = userService.getUserByGoogleId(claims.getSubject())
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = userService.getUserByGoogleId(claims.getSubject());
         return jwtProvider.generateAccessToken(claims.getSubject(), user.getUserType());
     }
 
@@ -74,7 +73,7 @@ public class AuthService {
         String googleId = token.getPayload().getSubject();
         String email = token.getPayload().getEmail();
         String name = token.getPayload().get("name").toString();
-        return userService.getUserByGoogleId(googleId)
+        return userService.getUser(googleId)
             .orElseGet(() -> userService.saveUser(
                 UserEntity.builder()
                     .userStatus(UserStatus.TEMP)

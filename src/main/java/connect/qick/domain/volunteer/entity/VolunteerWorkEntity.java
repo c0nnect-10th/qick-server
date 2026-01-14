@@ -64,13 +64,16 @@ public class VolunteerWorkEntity extends Base {
 
     //==연관관계 편의 메서드==//
     public void addApplication(VolunteerApplicationEntity application) {
+        if (maxParticipants <= currentParticipants) {
+            throw new VolunteerException(VolunteerStatusCode.RECRUITMENT_FULL);
+        }
+
         applications.add(application);
         application.setVolunteerWork(this);
     }
 
-    public void removeApplication(VolunteerApplicationEntity application) {
-        applications.remove(application);
-        application.setVolunteerWork(null);
+    public void cancelApplication() {
+        currentParticipants--;
     }
 
     public void setTeacher(UserEntity teacher) {
@@ -88,6 +91,7 @@ public class VolunteerWorkEntity extends Base {
         if (status != WorkStatus.RECRUITING) {
             throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
         }
+        //TODO: Application도 모두 cancel
         status = WorkStatus.CANCELLED;
         teacher.getVolunteerWorks().remove(this);
     }
