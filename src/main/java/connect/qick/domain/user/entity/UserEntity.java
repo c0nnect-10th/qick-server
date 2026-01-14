@@ -9,6 +9,7 @@ import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
+import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
@@ -73,6 +74,14 @@ public class UserEntity extends Base {
     @Builder.Default
     private List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
 
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            mappedBy="student"
+    )
+    @Builder.Default
+    private List<VolunteerApplicationEntity> volunteerApplications = new ArrayList<>();
+
 
     //==비즈니스 로직==//
     public void checkGoogleId(String googleId) {
@@ -108,6 +117,7 @@ public class UserEntity extends Base {
     public void addPoint(VolunteerWorkEntity work) {
 
     }
+
 }
 
 

@@ -20,11 +20,11 @@ import java.time.LocalDateTime;
 public class VolunteerApplicationEntity extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_id", nullable = false)
+    @JoinColumn(name = "work_id")
     private VolunteerWorkEntity volunteerWork;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id")
     private UserEntity student;
 
     @Enumerated(EnumType.STRING)
@@ -55,6 +55,12 @@ public class VolunteerApplicationEntity extends Base {
         if (status == null) {
             status = ApplicationStatus.APPLIED;
         }
+    }
+
+    //==연관관계 편의 메서드==//
+    public void setStudent(UserEntity student) {
+        this.student = student;
+        student.getVolunteerApplications().add(this);
     }
 
     //==비즈니스 로직==//

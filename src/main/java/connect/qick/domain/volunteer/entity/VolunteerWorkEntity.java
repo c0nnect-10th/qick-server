@@ -67,7 +67,7 @@ public class VolunteerWorkEntity extends Base {
         if (maxParticipants <= currentParticipants) {
             throw new VolunteerException(VolunteerStatusCode.RECRUITMENT_FULL);
         }
-
+        currentParticipants++;
         applications.add(application);
         application.setVolunteerWork(this);
     }

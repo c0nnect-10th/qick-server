@@ -6,22 +6,27 @@ import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.repository.UserRepository;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
+@Transactional
 @SpringBootTest
 class VolunteerApplicationServiceTest {
 
@@ -48,7 +53,7 @@ class VolunteerApplicationServiceTest {
                 UserEntity.builder()
                         .userType(UserType.TEACHER)
                         .userStatus(UserStatus.ACTIVE)
-                        .googleId("1234")
+                        .googleId("new")
                         .name("test1")
                         .build()
         ));
@@ -78,6 +83,28 @@ class VolunteerApplicationServiceTest {
             volunteerWorks.add(volunteerWorkRepository.save(work));
         }
 
+    }
+
+    @Test
+    @DisplayName("봉사활동 취소 테스트")
+    void cancelVolunteerApplication() {
+        VolunteerWorkEntity work = volunteerWorks.get(0);
+        UserEntity student1 = student.get(0);
+        VolunteerApplicationEntity application =
+                VolunteerApplicationEntity.builder()
+                .status(ApplicationStatus.APPLIED)
+                .appliedAt(LocalDateTime.now())
+                .build();
+        work.addApplication(application);
+        application.setStudent(student1);
+        volunteerApplicationRepository.save(application);
+
+        volunteerApplicationService.cancelApplication(
+                application.getId(), student1.getGoogleId(), "test1");
+
+        assertThat(work.getCurrentParticipants()).isEqualTo(0);
+        assertThat(application.getCancelReason()).isEqualTo("test1");
+        assertThat(application.getStatus()).isEqualTo(ApplicationStatus.CANCELLED);
     }
 
 
