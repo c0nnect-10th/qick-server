@@ -32,10 +32,7 @@ public class VolunteerApplicationService {
     @Transactional
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-
-        // 봉사활동 정보 조회
+        UserEntity student = userService.getUserByGoogleId(googleId);
         VolunteerWorkEntity work = volunteerWorkRepository.findById(workId)
                 .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
@@ -77,8 +74,7 @@ public class VolunteerApplicationService {
                 .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
 
         // 본인의 신청인지 확인
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity student = userService.getUserByGoogleId(googleId);
 
         if (!application.getStudent().getId().equals(student.getId())) {
             throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
@@ -102,9 +98,7 @@ public class VolunteerApplicationService {
     }
 
     public List<MyApplicationResponse> getMyApplications(String googleId) {
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-
+        UserEntity student = userService.getUserByGoogleId(googleId);
         List<VolunteerApplicationEntity> applications =
                 applicationRepository.findAllByStudentId(student.getId());
 
@@ -118,8 +112,7 @@ public class VolunteerApplicationService {
                 .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
 
         // 본인의 신청인지 확인
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity student = userService.getUserByGoogleId(googleId);
 
         if (!application.getStudent().getId().equals(student.getId())) {
             throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);

@@ -32,14 +32,14 @@ public class UserService {
         return userRepository.existsByGoogleId(googleId);
     }
 
-    public Optional<UserEntity> getUserByGoogleId(String googleId) {
-        return userRepository.findByGoogleId(googleId);
+    public UserEntity getUserByGoogleId(String googleId) {
+        return userRepository.findByGoogleId(googleId)
+            .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
     }
 
     public UserResponse getUserInfo(String googleId) {
         return UserResponse.from(
-                getUserByGoogleId(googleId)
-                    .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND))
+            getUserByGoogleId(googleId)
         );
     }
 
@@ -50,8 +50,7 @@ public class UserService {
 
     @Transactional
     public void signupStudent(String googleId, SignupStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = getUserByGoogleId(googleId);
         if(user.getUserStatus() == UserStatus.ACTIVE ) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
@@ -63,8 +62,7 @@ public class UserService {
 
     @Transactional
     public UserResponse updateStudent(String googleId, UpdateStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = getUserByGoogleId(googleId);
         user.updateUserProfile(request);
         return UserResponse.from(user);
     }

@@ -1,37 +1,28 @@
 package connect.qick.domain.volunteer.service;
 
-import connect.qick.domain.auth.exception.AuthException;
-import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.point.service.PointService;
 import connect.qick.domain.user.entity.UserEntity;
-import connect.qick.domain.user.exception.UserException;
-import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.response.*;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
-import connect.qick.domain.volunteer.enums.ApplicationStatus;
-import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
-import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Transactional
 @Service
 public class VolunteerWorkService {
-    private final VolunteerWorkRepository volunteerWorkRepository;;
+    private final VolunteerWorkRepository volunteerWorkRepository;
     private final UserService userService;
     private final PointService pointService;
 
@@ -54,17 +45,15 @@ public class VolunteerWorkService {
 
     /**
      * 봉사활동 생성
-     * @param googleId
-     * @param request
+     * @param googleId 유저(선생님) 구글 Id
+     * @param request CreateVolunteerWorkRequest
      * @return 봉사활동 Id, 봉사활동 상태
      */
     public CreateVolunteerWorkResponse create(
             String googleId,
             CreateVolunteerWorkRequest request
     ) {
-        UserEntity teacher =  userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-
+        UserEntity teacher =  userService.getUserByGoogleId(googleId);
         VolunteerWorkEntity work = VolunteerWorkEntity.createVolunteerWork(teacher, request);
         volunteerWorkRepository.save(work);
 
@@ -73,14 +62,14 @@ public class VolunteerWorkService {
 
     /**
      * 봉사활동 삭제
-     * @param workId
-     * @param googleId
+     * @param workId 봉사활동 Id
+     * @param googleId 유저(선생님) 구글 Id
      */
     public void deleteVolunteerWork(Long workId, String googleId) {
         VolunteerWorkEntity work = volunteerWorkRepository.findByWorkId(workId)
             .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
-        work.getTeacher().checkGoogleId(googleId);
-        work.cancel();
+
+        work.cancelBy(googleId);
     }
 
     /**
@@ -97,12 +86,8 @@ public class VolunteerWorkService {
     ) {
         // 봉사활동 조회
         VolunteerWorkEntity work = findById(workId);
-        work.getTeacher().checkGoogleId(googleId);
-
-        // 상태 확인 (ONGOING 상태여야 완료 가능)
-        if (work.getStatus() != WorkStatus.ONGOING) {
-            throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
-        }
+        work.validateTeacher(googleId);
+        work.validateCompletable();
 
         // 해당 봉사활동의 모든 신청 내역 조회
         List<VolunteerApplicationEntity> applications = work.getApplications();
@@ -112,25 +97,21 @@ public class VolunteerWorkService {
 
         // 출석 체크 및 상태 업데이트
         for (VolunteerApplicationEntity application : applications) {
-            if (application.getStatus() == ApplicationStatus.APPLIED) {
-                UserEntity student = application.getStudent();
+            if(!application.isApplied()) continue;
 
-                if (attendedStudentIds.contains(student.getId())) {
-                    // 참여한 학생
-                    application.complete();
-                    // 포인트 지급
-                    pointService.earnPoints(student, work);
+            boolean attended = attendedStudentIds.contains(application.getStudent().getId());
+            application.markAttendance(attended);
 
-                    attendedCount++;
-                } else {
-                    // 미참여 학생
-                    application.notComplete();
-                    // 포인트 차감
-                    pointService.deductPoints(student, work);
-
-                    noShowCount++;
-                }
+            if (attended) {
+                // 포인트 지급
+                pointService.earnPoints(application.getStudent(), work);
+                attendedCount++;
+            } else {
+                // 포인트 차감
+                pointService.deductPoints(application.getStudent(), work);
+                noShowCount++;
             }
+
         }
 
         // 봉사활동 상태를 COMPLETED로 변경
@@ -151,8 +132,7 @@ public class VolunteerWorkService {
      * @return List<VolunteerWorkEntity>
      */
     public List<VolunteerWorkEntity> getMyVolunteerWorks(String googleId, WorkStatus status) {
-        UserEntity teacher = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity teacher = userService.getUserByGoogleId(googleId);
 
         if (status == null) {
             return volunteerWorkRepository.findAllByTeacherId(teacher.getId());
@@ -169,19 +149,19 @@ public class VolunteerWorkService {
     public List<ApplicationStudentResponse> getApplicationStudents(Long workId, String googleId) {
         // 봉사활동 조회
         VolunteerWorkEntity work = findById(workId);
-        work.getTeacher().checkGoogleId(googleId);
+        work.validateTeacher(googleId);
 
         // 신청자 목록 조회
         List<VolunteerApplicationEntity> applications = work.getApplications();
         return applications.stream()
-                .filter(application -> application.getStatus() == ApplicationStatus.APPLIED)
+                .filter(VolunteerApplicationEntity::isApplied)
                 .map(ApplicationStudentResponse::from)
                 .collect(Collectors.toList());
     }
 
     public VolunteerWorkEntity findById(Long id) {
         return volunteerWorkRepository.findById(id)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
     }
 
 }

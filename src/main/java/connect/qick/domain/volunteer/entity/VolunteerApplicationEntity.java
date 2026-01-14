@@ -73,4 +73,18 @@ public class VolunteerApplicationEntity extends Base {
         status = ApplicationStatus.NO_SHOW;
         isAttended = false;
     }
+
+    public boolean isApplied() {
+        return status == ApplicationStatus.APPLIED;
+    }
+
+    public void markAttendance(boolean attended) {
+        if (status != ApplicationStatus.APPLIED) return;
+
+        if (attended) {
+            complete();
+        } else {
+            notComplete();
+        }
+    }
 }

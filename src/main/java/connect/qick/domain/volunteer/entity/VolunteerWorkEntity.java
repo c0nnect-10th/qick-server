@@ -15,8 +15,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static connect.qick.domain.volunteer.enums.ApplicationStatus.*;
-
 @Entity
 @Table(name="volunteer_work")
 @Getter
@@ -85,17 +83,27 @@ public class VolunteerWorkEntity extends Base {
      * 봉사활동 취소
      * 봉사활동을 만든 사용자가 맞는지 확인 후 봉사활동을 취소합니다.
      */
-    public void cancel() {
+    public void cancelBy(String googleId) {
+        this.teacher.checkGoogleId(googleId);
         if (status != WorkStatus.RECRUITING) {
             throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
         }
-
         status = WorkStatus.CANCELLED;
         teacher.getVolunteerWorks().remove(this);
     }
 
     public void complete() {
         status = WorkStatus.COMPLETED;
+    }
+
+    public void validateTeacher(String googleId) {
+        this.teacher.checkGoogleId(googleId);
+    }
+
+    public void validateCompletable() {
+        if (status != WorkStatus.ONGOING) {
+            throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
+        }
     }
 
     //==생성 메서드==//
