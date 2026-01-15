@@ -30,10 +30,10 @@ public class VolunteerWorkEntity extends Base {
     private String location;
 
     @Column(nullable = false)
-    private int maxParticipants;
+    private Integer maxParticipants;
 
     @Column(nullable = false)
-    private int currentParticipants;
+    private Integer currentParticipants;
 
     @Column(name="difficulty", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -61,6 +61,8 @@ public class VolunteerWorkEntity extends Base {
     @Builder.Default
     private List<VolunteerApplicationEntity> applications = new ArrayList<>();
 
+    private boolean reminder5Sent;
+    private boolean reminder10Sent;
 
     //==연관관계 편의 메서드==//
     public void addApplication(VolunteerApplicationEntity application) {

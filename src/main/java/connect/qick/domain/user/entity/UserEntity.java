@@ -35,6 +35,9 @@ public class UserEntity extends Base {
     private String email;
 
     @Column
+    private String fcmToken;
+
+    @Column
     private String name;
 
     @Enumerated(value = EnumType.STRING)

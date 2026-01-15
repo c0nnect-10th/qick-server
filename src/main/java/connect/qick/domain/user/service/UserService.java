@@ -84,6 +84,38 @@ public class UserService {
         userRepository.deleteByGoogleId(googleId);
     }
 
+    @Transactional
+    public void updateFcmToken(String googleId, String fcmToken) {
+        UserEntity user = getUserByGoogleId(googleId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+
+        if (!isValidFcmToken(fcmToken)) {
+            return;
+        }
+
+        user.setFcmToken(fcmToken.trim());
+        userRepository.save(user);
+    }
+
+    private boolean isValidFcmToken(String fcmToken) {
+        if (fcmToken == null) {
+            return false;
+        }
+
+        String token = fcmToken.trim();
+        if (token.isEmpty()) {
+            return false;
+        }
+
+        if (token.length() < 10 || token.length() > 4096) {
+            return false;
+        }
+
+        return token.matches("^[A-Za-z0-9_\\-:.]+$");
+    }
+    public List<UserEntity> getUsersByUserType(UserType userType) {
+        return userRepository.findAllByUserType(userType);
+    }
     public List<UserRankingResponse> getTopUsersByPoints(int limit) {
         List<UserEntity> topUsers = userRepository.findByUserTypeOrderByTotalPointsDesc(
                 UserType.STUDENT, 

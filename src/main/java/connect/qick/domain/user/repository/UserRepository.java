@@ -24,6 +24,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByTeacherCode(String teacherCode);
 
+    List<UserEntity> findAllByUserType(UserType userType);
+
     UserEntity save(UserEntity userEntity);
 
     void deleteByGoogleId(String googleId);

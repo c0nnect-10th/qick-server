@@ -56,6 +56,8 @@ public interface VolunteerApplicationRepository extends JpaRepository<VolunteerA
     """)
     List<VolunteerApplicationEntity> findAllByVolunteerWorkId(@Param("workId") Long workId);
 
+    List<VolunteerApplicationEntity> findAllByVolunteerWorkAndStatus(VolunteerWorkEntity volunteerWork, ApplicationStatus status);
+
     // 특정 봉사활동의 APPLIED 상태인 신청 수 조회
     @Query("""
         SELECT COUNT(a) FROM VolunteerApplicationEntity a
