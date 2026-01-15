@@ -34,8 +34,12 @@ public class VolunteerWorkService {
         return volunteerWorkRepository.findAllSummary();
     }
 
-    public List<VolunteerWorkSummaryResponse> findAllSummary() {
-        return volunteerWorkRepository.findAllSummary();
+    //TODO: 선생님이 만든 봉사활동만 조회
+
+    public List<VolunteerWorkSummaryResponse> findAllSummary(String googleId) {
+        return volunteerWorkRepository.findAllOrderByApplications(googleId)
+            .stream().map(w -> VolunteerWorkSummaryResponse.from(w))
+            .toList(); //TODO: response 참가중인지 아닌지
     }
 
     /**

@@ -4,8 +4,10 @@ import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.repository.UserRepository;
+import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
 import org.assertj.core.api.Assertions;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,6 +50,14 @@ class VolunteerWorkRepositoryTest {
                 UserEntity.builder()
                         .userType(UserType.STUDENT)
                         .userStatus(UserStatus.ACTIVE)
+                        .googleId("123456789")
+                        .build()
+        );
+        UserEntity student1 = userRepository.save(
+                UserEntity.builder()
+                        .userType(UserType.STUDENT)
+                        .userStatus(UserStatus.ACTIVE)
+                        .googleId("qwertyuio")
                         .build()
         );
 
@@ -78,36 +89,30 @@ class VolunteerWorkRepositoryTest {
         List<VolunteerApplicationEntity> applications = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             VolunteerApplicationEntity app = VolunteerApplicationEntity.builder()
-                    .volunteerWork(works.get(i*2))
+                    .volunteerWork(works.get(i * 2))
                     .student(student)
+                    .status(ApplicationStatus.APPLIED)
                     .build();
-            works.get(i*2).addApplication(app);
             applications.add(app);
         }
         volunteerApplicationRepository.saveAll(applications);
-
+        volunteerApplicationRepository.save(
+                VolunteerApplicationEntity.builder()
+                        .volunteerWork(works.get(3))
+                        .student(student1)
+                        .build()
+        );
 
         List<VolunteerWorkEntity> result =
-            volunteerWorkRepository.findAllSummaryByUserId(student.getId());
-
+                volunteerWorkRepository.findAllOrderByApplications(student.getGoogleId());
+        List<VolunteerWorkSummaryResponse> a = volunteerWorkRepository.findAllSummary();
+        for (VolunteerWorkSummaryResponse o : a) {
+            System.out.println(o.getWorkName());
+        }
         System.out.println("===");
         for (VolunteerWorkEntity work : result) {
             System.out.println(work.getId().toString() + "and" + work.getWorkName());
         }
-        System.out.println("===");
-        assertThat(result)
-            .isSortedAccordingTo((o1, o2) -> {
-                // 참여여부 내림차순
-                boolean r1 = compareVolunteerEntity(o1, student.getId());
-                boolean r2 = compareVolunteerEntity(o2, student.getId());
-                if (r1 != r2) {
-                    return Boolean.compare(r2, r1);
-                }
-                // 생성일 내림차순
-                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-            });
-
 
     }
-
 }

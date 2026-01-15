@@ -1,6 +1,7 @@
 package connect.qick.domain.volunteer.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -25,4 +26,16 @@ public class VolunteerWorkSummaryResponse {
     private int maxParticipants;
     @Schema(description = "현재 참여 인원", example = "2")
     private int currentParticipants;
+
+    public static VolunteerWorkSummaryResponse from(VolunteerWorkEntity entity) {
+        return new VolunteerWorkSummaryResponse(
+                entity.getId(),
+                entity.getWorkName(),
+                entity.getDifficulty(),
+                entity.getLocation(),
+                entity.getTeacher().getName(),
+                entity.getMaxParticipants(),
+                entity.getCurrentParticipants()
+        );
+    }
 }

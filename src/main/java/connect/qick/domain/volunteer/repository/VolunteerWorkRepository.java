@@ -37,12 +37,14 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
             SELECT 1
             FROM VolunteerApplicationEntity a
             WHERE a.volunteerWork = w and
-                a.status = 'APPLIED'
+                a.status = 'APPLIED' and
+                a.student.googleId = :googleId
         )
-        THEN 1 ELSE 0 END
-    )
+        THEN 1 ELSE 0 END 
+    ) desc,
+    w.createdAt desc
     """)
-    List<VolunteerWorkEntity> findAllSummaryOrderByApplications(String googleId);
+    List<VolunteerWorkEntity> findAllOrderByApplications(String googleId);
 
     //모집 중인 봉사활동 목록 조회
     @Query("""
