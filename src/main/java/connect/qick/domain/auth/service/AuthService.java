@@ -18,12 +18,14 @@ import connect.qick.global.security.jwt.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -47,7 +49,7 @@ public class AuthService {
     public GoogleIdToken verifyIdToken(final String idToken) {
         try {
             GoogleIdToken googleIdToken = idTokenVerifier.verify(idToken);
-            System.out.println(googleIdToken);
+            log.info(String.valueOf(googleIdToken));
             if (googleIdToken == null) {
                 throw new AuthException(AuthStatusCode.INVALID_ID_TOKEN);
             }

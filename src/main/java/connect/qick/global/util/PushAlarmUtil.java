@@ -5,10 +5,12 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PushAlarmUtil {
@@ -23,7 +25,7 @@ public class PushAlarmUtil {
      */
     public void send(String fcmToken, String title, String body) {
         if (fcmToken == null || fcmToken.isEmpty()) {
-            System.err.println("FCM token is null or empty, skipping push notification");
+            log.error("FCM token is null or empty, skipping push notification");
             return;
         }
 
@@ -39,9 +41,9 @@ public class PushAlarmUtil {
 
         try {
             String response = firebaseMessaging.send(message);
-            System.out.println("Successfully sent message to token " + fcmToken + ": " + response);
+            log.info("Successfully sent message to token " + fcmToken + ": " + response);
         } catch (Exception e) {
-            System.err.println("Failed to send message to token " + fcmToken + ": " + e.getMessage());
+            log.error("Failed to send message to token " + fcmToken + ": " + e.getMessage());
         }
     }
 
@@ -57,7 +59,7 @@ public class PushAlarmUtil {
                 .toList();
 
         if (validTokens.isEmpty()) {
-            System.err.println("No valid FCM tokens provided for multicast, skipping push notification.");
+            log.error("No valid FCM tokens provided for multicast, skipping push notification.");
             return;
         }
 
@@ -73,9 +75,9 @@ public class PushAlarmUtil {
 
         try {
             firebaseMessaging.sendEachForMulticast(multicastMessage);
-            System.out.println("Successfully sent multicast message to " + validTokens.size() + " tokens.");
+            log.info("Successfully sent multicast message to " + validTokens.size() + " tokens.");
         } catch (Exception e) {
-            System.err.println("Failed to send multicast message: " + e.getMessage());
+            log.error("Failed to send multicast message: " + e.getMessage());
         }
     }
 }
