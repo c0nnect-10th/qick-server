@@ -89,6 +89,11 @@ public class NotificationSchedulerService {
         log.info("{}분 전 알림 전송: 봉사 ID: {}, 대상 학생 수: {}", minutesBefore, work.getId(), fcmTokens.size());
         pushAlarmUtil.sendMulticast(fcmTokens, title, body);
 
+        if (minutesBefore == 10) {
+            work.setReminder10Sent(true);
+        } else if (minutesBefore == 5) {
+            work.setReminder5Sent(true);
+        }
         volunteerWorkRepository.save(work);
     }
 }
