@@ -91,6 +91,7 @@ public class UserService {
 
     public List<UserEntity> getUsersByUserType(UserType userType) {
         return userRepository.findAllByUserType(userType);
+    }
     public List<UserRankingResponse> getTopUsersByPoints(int limit) {
         List<UserEntity> topUsers = userRepository.findByUserTypeOrderByTotalPointsDesc(
                 UserType.STUDENT, 
