@@ -9,7 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEntity, Long> {
 
@@ -27,7 +26,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
                 a.status = 'APPLIED' and
                 a.student.googleId = :googleId
         )
-        THEN 1 ELSE 0 END 
+        THEN 1 ELSE 0 END
     ) desc,
     w.createdAt desc
     """)
@@ -36,29 +35,33 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     //모집 중인 봉사활동 목록 조회
     @Query("""
     SELECT new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
-        e.id,
-        e.workName,
-        e.difficulty,
-        e.location,
+        w.id,
+        w.workName,
+        w.difficulty,
+        w.location,
         t.name,
-        e.maxParticipants,
-        e.currentParticipants,
+        w.maxParticipants,
+        w.currentParticipants,
         CASE WHEN a.id IS NOT NULL THEN true ELSE false END)
-    FROM VolunteerWorkEntity e
-    JOIN e.teacher t
+    FROM VolunteerWorkEntity w
+    JOIN w.teacher t
     LEFT JOIN VolunteerApplicationEntity a
-        ON a.volunteerWork = e
+        ON a.volunteerWork = w
         AND a.student.googleId =:googleId
         AND a.status  = connect.qick.domain.volunteer.enums.ApplicationStatus.APPLIED
-    WHERE e.status in (connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING, connect.qick.domain.volunteer.enums.WorkStatus.ONGOING)
-    ORDER BY
-        CASE WHEN a.id IS NOT NULL THEN 1 ELSE 0 END desc,
-        e.createdAt desc
+    WHERE w.status IN (connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING, connect.qick.domain.volunteer.enums.WorkStatus.ONGOING)
+    ORDER BY    
+        (CASE
+            WHEN a.id IS NOT NULL AND w.status = 'ONGOING' THEN 4
+            WHEN a.id IS NOT NULL AND w.status = 'RECRUITING' THEN 3
+            WHEN a.id IS NULL AND w.status = 'RECRUITING' THEN 2
+            WHEN a.id IS NULL AND w.status = 'ONGOING' THEN 1
+        END) DESC,
+        w.createdAt desc
     """)
     List<VolunteerWorkSummaryResponse> findAllSummary(String googleId);
 
-    //봉사활동 조회
-    Optional<VolunteerWorkEntity> findById(Long id);
+
 
     // 스케줄러용 모집중인 봉사활동 조회 하는거
     List<VolunteerWorkEntity> findByStatusAndStartTimeBefore(
@@ -83,10 +86,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         WHERE w.teacher.id = :teacherId
         AND w.status in (connect.qick.domain.volunteer.enums.WorkStatus.ONGOING, connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING)
         ORDER BY
-        (CASE 
-            WHEN w.status = 'ONGOING' THEN 1
-            WHEN w.status = 'RECRUITING' THEN 0 
-        END),
+        CASE WHEN w.status = 'ONGOING' THEN 1 WHEN w.status = 'RECRUITING' THEN 0 END,
         w.createdAt DESC
     """)
     List<VolunteerWorkEntity> findAllOrderByStatus(Long teacherId);
