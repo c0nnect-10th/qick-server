@@ -90,6 +90,21 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     """)
     List<VolunteerWorkEntity> findAllByTeacherId(@Param("teacherId") Long teacherId);
 
+    @Query("""
+        SELECT w
+        FROM VolunteerWorkEntity w
+        WHERE w.teacher.id = :teacherId
+        ORDER BY
+        (CASE 
+            WHEN w.status = 'ONGOING' THEN 1
+            WHEN w.status = 'RECRUITING' THEN 2
+            WHEN w.status = 'COMPLETE' THEN 3
+            WHEN w.status = 'CANCELLED' THEN 4 
+        END),
+        w.createdAt DESC
+    """)
+    List<VolunteerWorkEntity> findAllOrderByStatus(Long teacherId);
+
     List<VolunteerWorkEntity> findByStatusAndStartTimeBetween(WorkStatus status, LocalDateTime start, LocalDateTime end);
 
 }

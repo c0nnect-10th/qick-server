@@ -86,8 +86,7 @@ public class UserService {
 
     @Transactional
     public void updateFcmToken(String googleId, String fcmToken) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = getUserByGoogleId(googleId);
 
         if (!isValidFcmToken(fcmToken)) {
             return;

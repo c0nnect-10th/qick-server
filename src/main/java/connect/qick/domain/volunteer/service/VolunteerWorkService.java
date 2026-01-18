@@ -146,7 +146,7 @@ public class VolunteerWorkService {
         UserEntity teacher = userService.getUserByGoogleId(googleId);
 
         if (status == null) {
-            return volunteerWorkRepository.findAllByTeacherId(teacher.getId());
+            return volunteerWorkRepository.findAllOrderByStatus(teacher.getId());
         }
         return volunteerWorkRepository.findByTeacherIdAndStatus(teacher.getId(), status);
     }
