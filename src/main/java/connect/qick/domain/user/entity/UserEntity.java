@@ -66,10 +66,10 @@ public class UserEntity extends Base {
     private Integer number;
 
     @Column
-    private Integer totalPoints;
+    private int totalPoints;
 
     @Column
-    private Integer totalCount;
+    private int totalCount;
 
     @OneToMany(
             fetch = FetchType.LAZY,

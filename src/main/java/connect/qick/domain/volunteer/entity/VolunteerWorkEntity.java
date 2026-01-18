@@ -33,7 +33,7 @@ public class VolunteerWorkEntity extends Base {
     private Integer maxParticipants;
 
     @Column(nullable = false)
-    private Integer currentParticipants;
+    private int currentParticipants;
 
     @Column(name="difficulty", nullable = false)
     @Enumerated(EnumType.STRING)
