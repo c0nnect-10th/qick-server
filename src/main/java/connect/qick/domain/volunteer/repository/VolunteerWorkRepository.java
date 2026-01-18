@@ -12,7 +12,15 @@ import java.util.List;
 
 public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEntity, Long> {
 
-    @Deprecated
+    /**
+     * Deprecated because it exposes {@link VolunteerWorkEntity} directly and relies on a complex
+     * JPQL query that is being phased out in favor of DTO-based projections.
+     * <p>
+     * Use {@link #findAllSummary(String)} to retrieve a summary view of volunteer works instead.
+     *
+     * @since 1.0
+     */
+    @Deprecated(since = "1.0", forRemoval = true)
     @Query("""
     SELECT w
     FROM VolunteerWorkEntity w
