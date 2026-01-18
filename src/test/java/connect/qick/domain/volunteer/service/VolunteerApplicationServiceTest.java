@@ -37,8 +37,6 @@ class VolunteerApplicationServiceTest {
     @Autowired
     private VolunteerApplicationService volunteerApplicationService;
     @Autowired
-    private VolunteerWorkRepository volunteerWorkService ;
-    @Autowired
     private VolunteerWorkRepository volunteerWorkRepository;
     @Autowired
     private UserRepository userRepository;
