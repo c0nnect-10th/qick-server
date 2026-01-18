@@ -57,7 +57,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             ServletException ex
     ) throws IOException {
 
-        ErrorResponse errorResponse = ErrorResponse.of(HttpStatus.INTERNAL_SERVER_ERROR.toString(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.of(status.toString(), ex.getMessage());
         ApiResponse<Void> apiResponse = ApiResponse.error(status, errorResponse);
 
         writer.write(status, apiResponse, response);
