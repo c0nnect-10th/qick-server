@@ -14,7 +14,7 @@ import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
