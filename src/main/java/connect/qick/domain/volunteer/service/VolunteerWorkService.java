@@ -33,11 +33,10 @@ public class VolunteerWorkService {
      * 봉사활동 목록 조회
      * @return 봉사활동 요약 리스트 반환
      */
-    public List<VolunteerWorkSummaryResponse> findAll() {
-        return volunteerWorkRepository.findAllSummary();
+    public List<VolunteerWorkSummaryResponse> findAll(String googleId) {
+        return volunteerWorkRepository.findAllSummary(googleId);
     }
 
-    //TODO: 선생님이 만든 봉사활동만 조회
 
     public List<VolunteerWorkSummaryResponse> findAllSummary(String googleId) {
         return volunteerWorkRepository.findAllOrderByApplications(googleId)

@@ -16,20 +16,6 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     @Query("""
     SELECT w
     FROM VolunteerWorkEntity w
-    LEFT OUTER JOIN w.applications a
-    WHERE w.status = 'RECRUITING'
-    ORDER BY
-        CASE
-            WHEN a.student.id = :userId THEN 0
-            ELSE 1
-        END,
-        w.createdAt desc
-    """)
-    List<VolunteerWorkEntity> findAllSummaryByUserId(Long userId);
-
-    @Query("""
-    SELECT w
-    FROM VolunteerWorkEntity w
     ORDER BY
     (
         CASE WHEN
@@ -48,29 +34,28 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
 
     //모집 중인 봉사활동 목록 조회
     @Query("""
-    select new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
+    SELECT DISTINCT new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
         e.id,
         e.workName,
         e.difficulty,
         e.location,
         t.name,
         e.maxParticipants,
-        e.currentParticipants
-
-        )
-    from VolunteerWorkEntity e
-    join e.teacher t
-    where e.status = 'RECRUITING'
-    order by e.createdAt desc
-    """)
-    List<VolunteerWorkSummaryResponse> findAllSummary();
-
-    //삭제되지 않은 봉사활동 조회
-    @Query("""
-    SELECT e
+        e.currentParticipants,
+        CASE WHEN a.id IS NOT NULL THEN true ELSE false END)
     FROM VolunteerWorkEntity e
-    WHERE e.id = :workId and e.status != 'CANCELLED'
+    JOIN e.teacher t
+    LEFT JOIN VolunteerApplicationEntity a
+        ON a.volunteerWork = e
+        AND a.student.googleId =:googleId
+        AND a.status  = 'APPLIED'
+    ORDER BY
+        CASE WHEN a.id IS NOT NULL THEN 1 ELSE 0 END desc,
+        e.createdAt desc
     """)
+    List<VolunteerWorkSummaryResponse> findAllSummary(String googleId);
+
+    //봉사활동 조회
     Optional<VolunteerWorkEntity> findByWorkId(@Param("workId")Long workId);
 
     // 스케줄러용 모집중인 봉사활동 조회 하는거

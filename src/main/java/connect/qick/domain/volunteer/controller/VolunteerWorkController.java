@@ -71,10 +71,12 @@ public class VolunteerWorkController {
                     )
             )
     })
-    public ResponseEntity<ApiResponse<List<VolunteerWorkSummaryResponse>>> getVolunteerWorks() {
+    public ResponseEntity<ApiResponse<List<VolunteerWorkSummaryResponse>>> getVolunteerWorks(
+            @AuthenticationPrincipal CustomUserDetails details
+    ) {
         return ResponseEntity.ok(
                 ApiResponse.ok(
-                        volunteerWorkService.findAll()
+                        volunteerWorkService.findAll(details.getGoogleId())
                 )
         );
     }
