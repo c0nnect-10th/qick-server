@@ -14,7 +14,6 @@ import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
