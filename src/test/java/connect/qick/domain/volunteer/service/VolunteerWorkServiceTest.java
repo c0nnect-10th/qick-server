@@ -128,8 +128,8 @@ class VolunteerWorkServiceTest {
         VolunteerWorkEntity work = volunteerWorks.stream()
             .findFirst()
             .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
-        assertThat(work.getTeacher().getVolunteerWorks().size())
-            .isEqualTo(1);
+        assertThat(work.getTeacher().getVolunteerWorks())
+            .hasSize(volunteerWorks.size());
 
         UserEntity user = work.getTeacher();
         String googleId = user.getGoogleId();
