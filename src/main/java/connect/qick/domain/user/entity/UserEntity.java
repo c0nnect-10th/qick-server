@@ -11,11 +11,13 @@ import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +88,12 @@ public class UserEntity extends Base {
     private List<VolunteerApplicationEntity> volunteerApplications = new ArrayList<>();
 
 
+    //==연관관계 편의 메서드==//
+    public void addVolunteerApplication(VolunteerApplicationEntity application) {
+        this.volunteerApplications.add(application);
+        application.setStudent(this);
+    }
+
     //==비즈니스 로직==//
     public void checkGoogleId(String googleId) {
         if (!this.googleId.equals(googleId)) {
@@ -93,32 +101,54 @@ public class UserEntity extends Base {
         }
     }
 
-    public void updateUserProfile(UpdateStudentRequest request) {
-        if (request.name() != null) this.name = request.name();
-        if (request.classroom() != null) {
-            String classroom = request.classroom();
-            if (classroom.startsWith("0") || classroom.length() != 4) {
-                throw new UserException(UserStatusCode.INVALID_CLASSROOM);
-            }
-            this.grade = Integer.parseInt(classroom.substring(0, 1));
-            this.classNumber = Integer.parseInt(classroom.substring(1, 2));
-            this.number = Integer.parseInt(classroom.substring(2));
+    public void checkIsTeacher() {
+        if (userType != UserType.TEACHER) {
+            throw new  AuthException(AuthStatusCode.ACCESS_ONLY_TEACHER);
         }
     }
-    public void updateUserProfile(SignupStudentRequest request) {
-        this.name = request.name();
-        String classroom = request.classroom();
+
+    public void checkIsStudent() {
+        if (userType != UserType.STUDENT) {
+            throw new  AuthException(AuthStatusCode.ACCESS_ONLY_TEACHER);
+        }
+    }
+
+    public String getClassroom() {
+        return "" + grade + classNumber + number;
+    }
+
+    public void setClassroom(String classroom) {
         if (classroom.startsWith("0") || classroom.length() != 4) {
             throw new UserException(UserStatusCode.INVALID_CLASSROOM);
         }
-        this.grade = Integer.parseInt(classroom.substring(0, 1));
-        this.classNumber = Integer.parseInt(classroom.substring(1, 2));
-        this.number = Integer.parseInt(classroom.substring(2));
+        grade = Integer.parseInt(classroom.substring(0, 1));
+        classNumber = Integer.parseInt(classroom.substring(1, 2));
+        number = Integer.parseInt(classroom.substring(2));
+    }
+
+    public void updateUserProfile(UpdateStudentRequest request) {
+        if (request.name() != null) this.name = request.name();
+        if (request.classroom() != null) setClassroom(request.classroom());
+    }
+    public void updateUserProfile(SignupStudentRequest request) {
+        this.name = request.name();
+        setClassroom(request.classroom());
     }
 
 
-    public void addPoint(VolunteerWorkEntity work) {
+    public VolunteerApplicationEntity applyVolunteer(VolunteerWorkEntity work) {
+        checkIsStudent();
+        work.validateApplication();
+        VolunteerApplicationEntity application = VolunteerApplicationEntity.builder()
+            .volunteerWork(work)
+            .status(ApplicationStatus.APPLIED)
+            .appliedAt(LocalDateTime.now())
+            .build();
 
+        addVolunteerApplication(application);
+        work.addApplication(application);
+
+        return application;
     }
 
 }

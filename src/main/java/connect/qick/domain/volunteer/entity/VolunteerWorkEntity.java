@@ -116,6 +116,12 @@ public class VolunteerWorkEntity extends Base {
         }
     }
 
+    public void validateApplication() {
+        if (status != WorkStatus.RECRUITING) {
+            throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
+        }
+    }
+
     //==생성 메서드==//
     /**
      * 봉사활동 생성

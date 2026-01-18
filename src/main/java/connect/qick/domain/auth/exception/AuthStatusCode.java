@@ -21,6 +21,8 @@ public enum AuthStatusCode implements StatusCode {
 
   UNAUTHORIZED("UNAUTHORIZED", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
   ACCESS_DENIED("ACCESS_DENIED", "접근 권한이 없습니다.",  HttpStatus.FORBIDDEN),
+  ACCESS_ONLY_STUDENT("ACCESS_ONLY_STUDENT", "학생만 접근이 가능합니다.",  HttpStatus.FORBIDDEN),
+  ACCESS_ONLY_TEACHER("ACCESS_ONLY_TEACHER", "선생님만 접근이 가능합니다.",  HttpStatus.FORBIDDEN),
 
   ;
 

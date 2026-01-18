@@ -50,7 +50,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         AND a.student.googleId =:googleId
         AND a.status  = connect.qick.domain.volunteer.enums.ApplicationStatus.APPLIED
     WHERE w.status IN (connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING, connect.qick.domain.volunteer.enums.WorkStatus.ONGOING)
-    ORDER BY    
+    ORDER BY
         (CASE
             WHEN a.id IS NOT NULL AND w.status = 'ONGOING' THEN 4
             WHEN a.id IS NOT NULL AND w.status = 'RECRUITING' THEN 3

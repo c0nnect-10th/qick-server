@@ -66,6 +66,7 @@ public class VolunteerApplicationEntity extends Base {
     //==비즈니스 로직==//
     public void validateStudent(String googleId) {
         this.student.checkGoogleId(googleId);
+        this.student.checkIsStudent();
     }
 
     /**

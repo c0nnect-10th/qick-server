@@ -37,7 +37,6 @@ public class VolunteerWorkService {
         return volunteerWorkRepository.findAllSummary(googleId);
     }
 
-
     /**
      * 특정 봉사활동 조회
      * @param id 봉사활동 id
@@ -94,7 +93,8 @@ public class VolunteerWorkService {
         work.validateCompletable();
 
         // 해당 봉사활동의 모든 신청 내역 조회
-        List<VolunteerApplicationEntity> applications = work.getApplications();
+        List<VolunteerApplicationEntity> applications = work.getApplications().stream()
+                .filter(VolunteerApplicationEntity::isApplied).toList();
 
         int attendedCount = 0;
         int noShowCount = 0;

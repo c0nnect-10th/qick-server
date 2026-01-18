@@ -44,24 +44,7 @@ public class VolunteerApplicationService {
 
         // 모집 인원 확인 (동시성 고려)
         synchronized (this) {
-            long currentAppliedCount = applicationRepository.countAppliedByWorkId(workId);
-            if (currentAppliedCount >= work.getMaxParticipants()) {
-                throw new VolunteerException(VolunteerStatusCode.RECRUITMENT_FULL);
-            }
-
-            // 신청 생성
-            VolunteerApplicationEntity application = VolunteerApplicationEntity.builder()
-                    .volunteerWork(work)
-                    .student(student)
-                    .status(ApplicationStatus.APPLIED)
-                    .appliedAt(LocalDateTime.now())
-                    .build();
-
-            applicationRepository.save(application);
-
-            // 현재 참여 인원 증가
-            work.setCurrentParticipants(work.getCurrentParticipants() + 1);
-            volunteerWorkRepository.save(work);
+            VolunteerApplicationEntity application = student.applyVolunteer(work);
 
             // 선생님에게 푸시 알림 전송
             UserEntity teacher = work.getTeacher();
