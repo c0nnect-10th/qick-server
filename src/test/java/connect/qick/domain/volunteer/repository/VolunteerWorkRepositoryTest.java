@@ -10,20 +10,16 @@ import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 
 @SpringBootTest
@@ -105,7 +101,7 @@ class VolunteerWorkRepositoryTest {
 
         List<VolunteerWorkEntity> result =
                 volunteerWorkRepository.findAllOrderByApplications(student.getGoogleId());
-        List<VolunteerWorkSummaryResponse> a = volunteerWorkRepository.findAllSummary();
+        List<VolunteerWorkSummaryResponse> a = volunteerWorkRepository.findAllSummary(student.getGoogleId());
         for (VolunteerWorkSummaryResponse o : a) {
             System.out.println(o.getWorkName());
         }

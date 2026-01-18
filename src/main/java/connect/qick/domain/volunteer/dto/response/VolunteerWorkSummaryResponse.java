@@ -26,6 +26,8 @@ public class VolunteerWorkSummaryResponse {
     private int maxParticipants;
     @Schema(description = "현재 참여 인원", example = "2")
     private int currentParticipants;
+    @Schema(description = "참여 여부", example = "false")
+    private boolean isParticipate;
 
     public static VolunteerWorkSummaryResponse from(VolunteerWorkEntity entity) {
         return new VolunteerWorkSummaryResponse(
@@ -35,7 +37,8 @@ public class VolunteerWorkSummaryResponse {
                 entity.getLocation(),
                 entity.getTeacher().getName(),
                 entity.getMaxParticipants(),
-                entity.getCurrentParticipants()
+                entity.getCurrentParticipants(),
+                false
         );
     }
 }

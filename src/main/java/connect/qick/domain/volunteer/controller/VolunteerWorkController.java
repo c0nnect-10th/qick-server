@@ -195,7 +195,7 @@ public class VolunteerWorkController {
     ) {
         return ResponseEntity.ok(
             ApiResponse.ok(
-                volunteerWorkService.create(userDetails.getUsername(), request)
+                volunteerWorkService.create(userDetails.getGoogleId(), request)
             )
         );
     }

@@ -13,6 +13,7 @@ import java.util.Optional;
 
 public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEntity, Long> {
 
+    @Deprecated
     @Query("""
     SELECT w
     FROM VolunteerWorkEntity w
@@ -34,7 +35,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
 
     //모집 중인 봉사활동 목록 조회
     @Query("""
-    SELECT DISTINCT new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
+    SELECT new connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse(
         e.id,
         e.workName,
         e.difficulty,
@@ -48,7 +49,8 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     LEFT JOIN VolunteerApplicationEntity a
         ON a.volunteerWork = e
         AND a.student.googleId =:googleId
-        AND a.status  = 'APPLIED'
+        AND a.status  = connect.qick.domain.volunteer.enums.ApplicationStatus.APPLIED
+    WHERE e.status in (connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING, connect.qick.domain.volunteer.enums.WorkStatus.ONGOING)
     ORDER BY
         CASE WHEN a.id IS NOT NULL THEN 1 ELSE 0 END desc,
         e.createdAt desc
@@ -56,7 +58,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     List<VolunteerWorkSummaryResponse> findAllSummary(String googleId);
 
     //봉사활동 조회
-    Optional<VolunteerWorkEntity> findByWorkId(@Param("workId")Long workId);
+    Optional<VolunteerWorkEntity> findById(Long id);
 
     // 스케줄러용 모집중인 봉사활동 조회 하는거
     List<VolunteerWorkEntity> findByStatusAndStartTimeBefore(
@@ -79,12 +81,11 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         SELECT w
         FROM VolunteerWorkEntity w
         WHERE w.teacher.id = :teacherId
+        AND w.status in (connect.qick.domain.volunteer.enums.WorkStatus.ONGOING, connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING)
         ORDER BY
         (CASE 
             WHEN w.status = 'ONGOING' THEN 1
-            WHEN w.status = 'RECRUITING' THEN 2
-            WHEN w.status = 'COMPLETE' THEN 3
-            WHEN w.status = 'CANCELLED' THEN 4 
+            WHEN w.status = 'RECRUITING' THEN 0 
         END),
         w.createdAt DESC
     """)

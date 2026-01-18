@@ -104,11 +104,12 @@ public class VolunteerApplicationEntity extends Base {
             throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
         }
 
+        this.volunteerWork.cancelApplication();
+
         this.status = ApplicationStatus.CANCELLED;
         this.cancelReason = cancelReason;
         this.cancelledAt = LocalDateTime.now();
 
-        this.volunteerWork.cancelApplication();
     }
 
 }

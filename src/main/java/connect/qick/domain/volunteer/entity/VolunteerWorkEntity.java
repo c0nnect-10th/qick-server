@@ -75,11 +75,13 @@ public class VolunteerWorkEntity extends Base {
     }
 
     public void cancelApplication() {
+        if (status != WorkStatus.RECRUITING) {
+            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
+        }
         currentParticipants--;
     }
 
     public void setTeacher(UserEntity teacher) {
-        //TODO: Teacher인지 확인하는 코드 + Student확인코드
         this.teacher = teacher;
         teacher.getVolunteerWorks().add(this);
     }
@@ -90,11 +92,12 @@ public class VolunteerWorkEntity extends Base {
      * 봉사활동을 만든 사용자가 맞는지 확인 후 봉사활동을 취소합니다.
      */
     public void cancelBy(String googleId) {
-        this.teacher.checkGoogleId(googleId);
         if (status != WorkStatus.RECRUITING) {
-            throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
+            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
         }
-        //TODO: Application도 모두 cancel
+
+        this.teacher.checkGoogleId(googleId);
+        applications.forEach(application -> application.cancel("봉사활동이 취소되었습니다."));
         status = WorkStatus.CANCELLED;
         teacher.getVolunteerWorks().remove(this);
     }

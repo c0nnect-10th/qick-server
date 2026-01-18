@@ -55,19 +55,19 @@ public class UserEntity extends Base {
     private String teacherCode;
 
     @Column
-    private int grade;
+    private Integer grade;
 
     @Column(name = "class")
-    private int classNumber;
+    private Integer classNumber;
 
     @Column
-    private int number;
+    private Integer number;
 
     @Column
-    private int totalPoints;
+    private Integer totalPoints;
 
     @Column
-    private int totalCount;
+    private Integer totalCount;
 
     @OneToMany(
             fetch = FetchType.LAZY,

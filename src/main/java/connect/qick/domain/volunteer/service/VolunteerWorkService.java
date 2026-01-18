@@ -38,12 +38,6 @@ public class VolunteerWorkService {
     }
 
 
-    public List<VolunteerWorkSummaryResponse> findAllSummary(String googleId) {
-        return volunteerWorkRepository.findAllOrderByApplications(googleId)
-            .stream().map(w -> VolunteerWorkSummaryResponse.from(w))
-            .toList(); //TODO: response 참가중인지 아닌지
-    }
-
     /**
      * 특정 봉사활동 조회
      * @param id 봉사활동 id
@@ -76,7 +70,7 @@ public class VolunteerWorkService {
      * @param googleId 유저(선생님) 구글 Id
      */
     public void deleteVolunteerWork(Long workId, String googleId) {
-        VolunteerWorkEntity work = volunteerWorkRepository.findByWorkId(workId)
+        VolunteerWorkEntity work = volunteerWorkRepository.findById(workId)
             .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         work.cancelBy(googleId);
