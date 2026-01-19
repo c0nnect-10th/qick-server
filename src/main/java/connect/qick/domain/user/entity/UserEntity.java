@@ -109,7 +109,7 @@ public class UserEntity extends Base {
 
     public void checkIsStudent() {
         if (userType != UserType.STUDENT) {
-            throw new  AuthException(AuthStatusCode.ACCESS_ONLY_TEACHER);
+            throw new  AuthException(AuthStatusCode.ACCESS_ONLY_STUDENT);
         }
     }
 
