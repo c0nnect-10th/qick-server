@@ -37,6 +37,7 @@ dependencies {
 	implementation 'com.google.api-client:google-api-client:2.2.0'
 	implementation 'com.google.http-client:google-http-client-gson:1.44.1'
 	compileOnly "org.flywaydb:flyway-mysql"
+	implementation 'com.google.firebase:firebase-admin:9.3.0'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'

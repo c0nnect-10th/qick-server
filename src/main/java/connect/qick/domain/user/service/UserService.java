@@ -32,4 +32,7 @@ public interface UserService {
     void deleteUser(String googleId);
 
     List<UserRankingResponse> getTopUsersByPoints(int limit);
+
+    @Transactional
+    void updateFcmToken(String googleId, String fcmToken);
 }
