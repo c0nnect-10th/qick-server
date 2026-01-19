@@ -3,6 +3,7 @@ package connect.qick.global.security.jwt.filter;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.global.security.jwt.JwtExtract;
 import connect.qick.global.security.jwt.JwtProvider;
+import connect.qick.infra.redis.RedisTokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,11 +24,13 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtExtract jwtExtract;
+    private final RedisTokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String token = jwtExtract.extractTokenFromRequest(request);
         if (token != null) {
+            tokenBlacklistService.checkBlacklisted(token);
             SecurityContextHolder.getContext().setAuthentication(jwtExtract.getAuthentication(token));
         }
 
