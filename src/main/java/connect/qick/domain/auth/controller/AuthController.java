@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    private final JwtExtract jwtExtract; // Inject JwtExtract
 
     @PostMapping("/login")
     @Operation(
@@ -43,15 +42,13 @@ public class AuthController {
                                             name = "신규 유저 로그인 성공",
                                             summary = "새로운 사용자가 성공적으로 로그인했을 때의 응답",
                                             value = "{\"status\":200,\"data\":{\"accessToken\":\"eyJhbGciOiJIUzI1NiJ9...\"," +
-                                                    "\"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9...\"," +
-                                                    "\"isNewUser\":true}}"
+                                                    "\"signupToken\":\"eyJhbGciOiJIUzI1NiJ9...\"}}"
                                     ),
                                     @ExampleObject(
                                             name = "기존 유저 로그인 성공",
                                             summary = "기존 사용자가 성공적으로 로그인했을 때의 응답",
                                             value = "{\"status\":200,\"data\":{\"accessToken\":\"eyJhbGciOiJIUzI1NiJ9...\"," +
-                                                    "\"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9...\"," +
-                                                    "\"isNewUser\":false}}"
+                                                    "\"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9...\"}}"
                                     )
                             }
                     )
@@ -105,6 +102,7 @@ public class AuthController {
                     "status": 200,
                     "data": {
                         "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWI....."
+                        "refreshToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWI....."
                     }
                 }
                 """

@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-    private final AuthService authService;
-    private final JwtExtract jwtExtract;
 
     @GetMapping("/")
     @Operation(
@@ -141,7 +138,10 @@ public class UserController {
                                     value = """
                 {
                     "status": 200,
-                    "data": "성공적으로 가입했습니다."
+                    "data": {
+                        "accessToken": "eyJhbGciOiJIUzI1NiJ9...",
+                        "refreshToken": "eyJhbGciOiJIUzI1NiJ9..."
+                    }
                 }
                 """
                             )
