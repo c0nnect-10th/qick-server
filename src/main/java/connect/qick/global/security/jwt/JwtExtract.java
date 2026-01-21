@@ -16,6 +16,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class JwtExtract {
@@ -26,12 +28,30 @@ public class JwtExtract {
         return extractToken(request.getHeader(HttpHeaders.AUTHORIZATION));
     }
 
+
+    public List<String> extractAllowedPaths(Claims claims) {
+        Object raw = claims.get("scope");
+
+        if (raw == null) {
+            return List.of();
+        }
+
+        return ((List<?>) raw).stream()
+            .map(String::valueOf)
+            .toList();
+    }
+
     public Authentication getAuthentication(final String token) {
         final Jws<Claims> jws = jwtProvider.getClaims(token);
         final Claims claims = jws.getPayload();
-        if (!checkTokenType(claims, TokenType.ACCESS)) {
-            throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
+
+        try {
+            checkTokenType(claims, TokenType.ACCESS);
         }
+        catch (AuthException e) {
+            checkTokenType(claims, TokenType.SIGNUP);
+        }
+
         UserType userType = UserType.valueOf(claims.get("authority", String.class));
         final UserEntity user = UserEntity.builder()
                 .googleId(claims.getSubject())
@@ -51,8 +71,10 @@ public class JwtExtract {
     }
 
 
-    public boolean checkTokenType(final Claims claims, final TokenType tokenType) { //TODO: 바로 exception 날리도록 수정
-        return claims.get("token_type").equals(tokenType.toString());
+    public void checkTokenType(final Claims claims, final TokenType tokenType) {
+        if(!claims.get("token_type").equals(tokenType.toString())) {
+            throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
+        }
     }
 
 }

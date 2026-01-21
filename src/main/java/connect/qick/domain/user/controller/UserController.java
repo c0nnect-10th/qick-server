@@ -4,6 +4,7 @@ import connect.qick.domain.auth.service.AuthService;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateFcmTokenRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.SignupResponse;
 import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.service.UserService;
@@ -207,17 +208,13 @@ public class UserController {
                     )
             )
     })
-    public ResponseEntity<ApiResponse<?>> signupUser(
+    public ResponseEntity<ApiResponse<SignupResponse>> signupUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody @Valid SignupStudentRequest request,
-            HttpServletRequest servletRequest
+            @RequestBody @Valid SignupStudentRequest request
     ) {
-        userService.signupStudent(userDetails.getGoogleId(), request);
-        authService.logout(jwtExtract.extractTokenFromRequest(servletRequest));
-
-        return ResponseEntity.ok(
-                ApiResponse.ok("성공적으로 가입했습니다.")
-        );
+        return ResponseEntity.ok(ApiResponse.ok(
+            userService.signupStudent(userDetails.getGoogleId(), request)
+        ));
     }
 
     @PatchMapping("/student")

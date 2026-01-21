@@ -17,4 +17,6 @@ public class JwtProperties {
     private long accessExpiration;
 
     private long refreshExpiration;
+
+    private long signupExpiration;
 }
