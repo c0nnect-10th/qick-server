@@ -34,8 +34,8 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_URL:REDIS_URL missing}
-      port: 6379
+      host: ${REDIS_URL:?REDIS_URL missing}
+      port: ${REDIS_HOST:?REDIS_HOST missing}
 
 firebase:
   service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY_PATH:?FIREBASE_SERVICE_ACCOUNT_KEY_PATH missing}
