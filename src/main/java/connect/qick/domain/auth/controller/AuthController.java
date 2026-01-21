@@ -227,7 +227,6 @@ public class AuthController {
     })
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<ApiResponse<String>> logout(
-            HttpServletRequest servletRequest,
             @RequestBody @Valid RefreshRequest refreshRequest
     ) {
         String refreshToken = refreshRequest.refreshToken();
