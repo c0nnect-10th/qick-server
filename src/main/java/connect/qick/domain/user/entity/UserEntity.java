@@ -59,11 +59,9 @@ public class UserEntity extends Base {
     private int number;
 
     @Column
-    @Setter
     private int totalPoints;
 
     @Column
-    @Setter
     private int totalCount;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy="teacher")
