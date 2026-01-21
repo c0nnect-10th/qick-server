@@ -23,7 +23,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.Optional;
+
+import connect.qick.infra.redis.RedisTokenBlacklistService;
+import io.jsonwebtoken.Jws;
+import java.time.Duration;
+import java.util.Date;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -34,6 +39,7 @@ public class AuthService {
     private final JwtExtract jwtExtract;
     private final GoogleIdTokenVerifier idTokenVerifier;
     private final UserService userService;
+    private final RedisTokenBlacklistService redisTokenBlacklistService;
 
     @Transactional
     public LoginResponse login(final String idToken) {
@@ -59,6 +65,18 @@ public class AuthService {
             throw new AuthException(AuthStatusCode.INVALID_ID_TOKEN);
         }
 
+    }
+
+    public void logout(String accessToken) {
+        if (StringUtils.hasText(accessToken)) {
+            Jws<Claims> claims = jwtProvider.getClaims(accessToken);
+            Date expiration = claims.getPayload().getExpiration();
+            long remainingMillis = expiration.getTime() - new Date().getTime();
+
+            if (remainingMillis > 0) {
+                redisTokenBlacklistService.setBlacklist(accessToken, Duration.ofMillis(remainingMillis));
+            }
+        }
     }
 
     public String refresh(String refreshToken) {

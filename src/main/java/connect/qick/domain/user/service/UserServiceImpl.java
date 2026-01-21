@@ -12,6 +12,7 @@ import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.repository.UserRepository;
+import connect.qick.infra.redis.RedisTokenBlacklistService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +28,7 @@ import java.util.stream.IntStream;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final RedisTokenBlacklistService tokenBlacklistService;
 
     @Override
     public boolean checkGoogleId(String googleId) {
@@ -61,7 +63,6 @@ public class UserServiceImpl implements UserService {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
         user.signupStudent(request);
-        //TODO: blacklist 추가
     }
 
     @Transactional

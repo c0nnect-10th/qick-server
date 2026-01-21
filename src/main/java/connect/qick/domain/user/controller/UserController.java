@@ -1,5 +1,6 @@
 package connect.qick.domain.user.controller;
 
+import connect.qick.domain.auth.service.AuthService;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateFcmTokenRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
@@ -9,6 +10,7 @@ import connect.qick.domain.user.service.UserService;
 import connect.qick.global.data.ApiResponse;
 import connect.qick.global.data.ErrorResponse;
 import connect.qick.global.security.entity.CustomUserDetails;
+import connect.qick.global.security.jwt.JwtExtract;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -16,14 +18,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "User", description = "사용자 정보 관리 API")
 @SecurityRequirement(name = "bearerAuth")
@@ -33,6 +40,8 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final AuthService authService;
+    private final JwtExtract jwtExtract;
 
     @GetMapping("/")
     @Operation(
@@ -200,9 +209,12 @@ public class UserController {
     })
     public ResponseEntity<ApiResponse<?>> signupUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody @Valid SignupStudentRequest request
+            @RequestBody @Valid SignupStudentRequest request,
+            HttpServletRequest servletRequest
     ) {
         userService.signupStudent(userDetails.getGoogleId(), request);
+        authService.logout(jwtExtract.extractTokenFromRequest(servletRequest));
+
         return ResponseEntity.ok(
                 ApiResponse.ok("성공적으로 가입했습니다.")
         );
