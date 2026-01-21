@@ -44,9 +44,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
     public void checkEndpointAuthorization(HttpServletRequest request, Claims claims) {
         String uri = request.getRequestURI();
-        String token = claims.get("token_type", String.class);
+        String tokenType = claims.get("token_type", String.class);
 
-        if (!TokenType.SIGNUP.name().equals(token)) {
+        if (!TokenType.SIGNUP.name().equals(tokenType)) {
             return;
         }
 

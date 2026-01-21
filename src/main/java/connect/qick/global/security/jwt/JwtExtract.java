@@ -44,12 +44,10 @@ public class JwtExtract {
     public Authentication getAuthentication(final String token) {
         final Jws<Claims> jws = jwtProvider.getClaims(token);
         final Claims claims = jws.getPayload();
-
-        try {
-            checkTokenType(claims, TokenType.ACCESS);
-        }
-        catch (AuthException e) {
-            checkTokenType(claims, TokenType.SIGNUP);
+        String tokenType = claims.get("token_type", String.class);
+        if (!TokenType.ACCESS.toString().equals(tokenType)
+                && !TokenType.SIGNUP.toString().equals(tokenType)) {
+            throw new AuthException(AuthStatusCode.INVALID_TOKEN_TYPE);
         }
 
         UserType userType = UserType.valueOf(claims.get("authority", String.class));
