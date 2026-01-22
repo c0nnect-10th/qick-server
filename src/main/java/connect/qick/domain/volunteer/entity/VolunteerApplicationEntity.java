@@ -57,12 +57,6 @@ public class VolunteerApplicationEntity extends Base {
         }
     }
 
-    //==연관관계 편의 메서드==//
-    public void setStudent(UserEntity student) {
-        this.student = student;
-        student.getVolunteerApplications().add(this);
-    }
-
     //==비즈니스 로직==//
     public void validateStudent(String googleId) {
         this.student.checkGoogleId(googleId);

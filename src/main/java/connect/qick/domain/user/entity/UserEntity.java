@@ -78,21 +78,6 @@ public class UserEntity extends Base {
     @Builder.Default
     private List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
 
-    @OneToMany(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            mappedBy="student"
-    )
-    @Builder.Default
-    private List<VolunteerApplicationEntity> volunteerApplications = new ArrayList<>();
-
-
-    //==연관관계 편의 메서드==//
-    public void addVolunteerApplication(VolunteerApplicationEntity application) {
-        this.volunteerApplications.add(application);
-        application.setStudent(this);
-    }
-
     //==비즈니스 로직==//
     public void checkGoogleId(String googleId) {
         if (!this.googleId.equals(googleId)) {
@@ -152,7 +137,7 @@ public class UserEntity extends Base {
             .appliedAt(LocalDateTime.now())
             .build();
 
-        addVolunteerApplication(application);
+        application.setStudent(this);
         work.addApplication(application);
 
         return application;
