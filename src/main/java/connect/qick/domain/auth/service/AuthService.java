@@ -9,8 +9,6 @@ import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
-import connect.qick.domain.user.exception.UserException;
-import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.global.security.jwt.JwtExtract;
 import connect.qick.global.security.jwt.JwtProvider;
@@ -84,8 +82,7 @@ public class AuthService {
 
         Claims claims = jwtProvider.getClaims(refreshToken).getPayload();
         jwtExtract.checkTokenType(claims, TokenType.REFRESH);
-        UserEntity user = userService.getUserByGoogleId(claims.getSubject())
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = userService.getUserByGoogleId(claims.getSubject());
 
         String newAccess = jwtProvider.generateAccessToken(claims.getSubject(), user.getUserType());
         String newRefresh = jwtProvider.generateRefreshToken(claims.getSubject(), user.getUserType());
@@ -97,7 +94,7 @@ public class AuthService {
         String googleId = token.getPayload().getSubject();
         String email = token.getPayload().getEmail();
         String name = token.getPayload().get("name").toString();
-        return userService.getUserByGoogleId(googleId)
+        return userService.getUser(googleId)
             .orElseGet(() -> userService.saveUser(
                 UserEntity.builder()
                     .userStatus(UserStatus.TEMP)

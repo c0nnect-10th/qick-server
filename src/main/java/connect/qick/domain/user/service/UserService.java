@@ -1,11 +1,13 @@
 package connect.qick.domain.user.service;
 
+
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.dto.response.SignupResponse;
 import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
+import connect.qick.domain.user.enums.UserType;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
@@ -15,7 +17,9 @@ public interface UserService {
 
     boolean checkGoogleId(String googleId);
 
-    Optional<UserEntity> getUserByGoogleId(String googleId);
+    UserEntity getUserByGoogleId(String googleId);
+
+    Optional<UserEntity> getUser(String googleId);
 
     UserResponse getUserInfo(String googleId);
 
@@ -32,8 +36,12 @@ public interface UserService {
     @Transactional
     void deleteUser(String googleId);
 
-    List<UserRankingResponse> getTopUsersByPoints(int limit);
-
     @Transactional
     void updateFcmToken(String googleId, String fcmToken);
+
+    boolean isValidFcmToken(String fcmToken);
+
+    List<UserEntity> getUsersByUserType(UserType userType);
+
+    List<UserRankingResponse> getTopUsersByPoints(int limit);
 }

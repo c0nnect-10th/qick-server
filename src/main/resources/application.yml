@@ -24,7 +24,7 @@ spring:
 
   jwt:
     secret-key: ${JWT_SECRET_KEY:?JWT_SECRET_KEY missing}
-    access-expiration: 1800000
+    access-expiration: 900000
     refresh-expiration: 2592000000
     signup-expiration: 900000
 
@@ -35,7 +35,7 @@ spring:
   data:
     redis:
       host: ${REDIS_URL:?REDIS_URL missing}
-      port: ${REDIS_HOST:?REDIS_HOST missing}
+      port: ${REDIS_PORT:?REDIS_HOST missing}
 
 firebase:
   service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY_PATH:?FIREBASE_SERVICE_ACCOUNT_KEY_PATH missing}

@@ -37,7 +37,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserEntity> getUserByGoogleId(String googleId) {
+    public UserEntity getUserByGoogleId(String googleId) {
+        return userRepository.findByGoogleId(googleId)
+            .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+    }
+
+    @Override
+    public Optional<UserEntity> getUser(String googleId) {
         return userRepository.findByGoogleId(googleId);
     }
 
@@ -45,7 +51,6 @@ public class UserServiceImpl implements UserService {
     public UserResponse getUserInfo(String googleId) {
         return UserResponse.from(
                 getUserByGoogleId(googleId)
-                    .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND))
         );
     }
 
@@ -58,8 +63,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public SignupResponse signupStudent(String googleId, SignupStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = getUserByGoogleId(googleId);
         if(user.getUserStatus() == UserStatus.ACTIVE) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
@@ -73,8 +77,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserResponse updateStudent(String googleId, UpdateStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = getUserByGoogleId(googleId);
         user.updateUserProfile(request);
         return UserResponse.from(user);
     }
@@ -93,23 +96,10 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteByGoogleId(googleId);
     }
 
-    @Override
-    public List<UserRankingResponse> getTopUsersByPoints(int limit) {
-        List<UserEntity> topUsers = userRepository.findByUserTypeOrderByTotalPointsDesc(
-                UserType.STUDENT, 
-                PageRequest.of(0, limit)
-        );
-
-        return IntStream.range(0, topUsers.size())
-                .mapToObj(i -> UserRankingResponse.from(topUsers.get(i), i + 1))
-                .collect(Collectors.toList());
-    }
-
     @Transactional
     @Override
     public void updateFcmToken(String googleId, String fcmToken) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity user = getUserByGoogleId(googleId);
 
         if (!isValidFcmToken(fcmToken)) {
             return;
@@ -119,7 +109,8 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-    private boolean isValidFcmToken(String fcmToken) {
+    @Override
+    public boolean isValidFcmToken(String fcmToken) {
         if (fcmToken == null) {
             return false;
         }
@@ -135,8 +126,19 @@ public class UserServiceImpl implements UserService {
 
         return token.matches("^[A-Za-z0-9_\\-:.]+$");
     }
+    @Override
     public List<UserEntity> getUsersByUserType(UserType userType) {
         return userRepository.findAllByUserType(userType);
     }
+    @Override
+    public List<UserRankingResponse> getTopUsersByPoints(int limit) {
+        List<UserEntity> topUsers = userRepository.findByUserTypeOrderByTotalPointsDesc(
+                UserType.STUDENT,
+                PageRequest.of(0, limit)
+        );
 
+        return IntStream.range(0, topUsers.size())
+                .mapToObj(i -> UserRankingResponse.from(topUsers.get(i), i + 1))
+                .collect(Collectors.toList());
+    }
 }
