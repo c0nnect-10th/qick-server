@@ -30,7 +30,7 @@ public class VolunteerWorkEntity extends Base {
     private String location;
 
     @Column(nullable = false)
-    private Integer maxParticipants;
+    private int maxParticipants;
 
     @Column(nullable = false)
     private int currentParticipants;
@@ -42,9 +42,6 @@ public class VolunteerWorkEntity extends Base {
     @Lob
     @Column(nullable = false)
     private String description;
-
-    @Column
-    private Integer points; // 굳이 필요할까? 난이도에 따라 포인트가 적용되는거라
 
     @Column(name="status")
     @Enumerated(EnumType.STRING)
