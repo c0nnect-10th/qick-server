@@ -100,16 +100,20 @@ public class VolunteerApplicationEntity extends Base {
         }
     }
 
+    public void cancel (String cancelReason, String googleId) {
+        validateStudent(googleId);
+        cancel(cancelReason);
+    }
+
     public void cancel(String cancelReason) {
         if (this.status != ApplicationStatus.APPLIED) {
             throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
         }
-
-        this.volunteerWork.cancelApplication();
-
         this.status = ApplicationStatus.CANCELLED;
         this.cancelReason = cancelReason;
         this.cancelledAt = LocalDateTime.now();
+
+        this.volunteerWork.cancelApplication();
 
     }
 

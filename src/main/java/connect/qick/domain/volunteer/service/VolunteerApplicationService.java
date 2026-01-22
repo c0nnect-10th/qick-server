@@ -66,9 +66,8 @@ public class VolunteerApplicationService {
      */
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
         VolunteerApplicationEntity application = findById(applicationId);
-        application.validateStudent(googleId);
 
-        application.cancel(cancelReason);
+        application.cancel(cancelReason, googleId);
     }
 
     /**
