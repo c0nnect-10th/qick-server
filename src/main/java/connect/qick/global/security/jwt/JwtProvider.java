@@ -6,27 +6,31 @@ import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.global.security.jwt.config.JwtProperties;
 import connect.qick.global.security.jwt.enums.TokenType;
+import connect.qick.infra.redis.RedisRefreshTokenService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 
 
 @Component
 public class JwtProvider {
 
     private final JwtProperties jwtProperties;
-
+    private final RedisRefreshTokenService redisRefreshTokenService;
     private final SecretKey key;
 
-    public JwtProvider(JwtProperties jwtProperties) {
+    public JwtProvider(JwtProperties jwtProperties, RedisRefreshTokenService redisRefreshTokenService) {
         this.jwtProperties = jwtProperties;
         key = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
+        this.redisRefreshTokenService = redisRefreshTokenService;
     }
 
     public Jws<Claims> getClaims(String token) {
@@ -50,24 +54,42 @@ public class JwtProvider {
     public String generateToken(TokenType tokenType, String googleId, UserType role, long expiration) {
         Instant now = Instant.now();
         return Jwts.builder()
-                .header()
-                .type("JWT")
-                .and()
-                .subject(googleId)
-                .claim("token_type", tokenType.name())
-                .claim("authority", role.name())
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plus(expiration, ChronoUnit.MILLIS)))
-                .signWith(key, Jwts.SIG.HS256)
-                .compact();
+            .header()
+            .type("JWT")
+            .and()
+            .subject(googleId)
+            .claim("token_type", tokenType.name())
+            .claim("authority", role.name())
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(now.plus(expiration, ChronoUnit.MILLIS)))
+            .signWith(key, Jwts.SIG.HS256)
+            .compact();
     }
 
     public String generateAccessToken(String googleId, UserType role) {
         return generateToken(TokenType.ACCESS, googleId, role, jwtProperties.getAccessExpiration());
     }
 
+    public String generateSignupToken(String googleId, List<String> scope) {
+        Instant now = Instant.now();
+        return Jwts.builder()
+                .header()
+                .type("JWT")
+                .and()
+                .subject(googleId)
+                .claim("token_type", TokenType.SIGNUP.name())
+                .claim("authority", UserType.USER.name())
+                .claim("scope", scope)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plus(jwtProperties.getSignupExpiration(), ChronoUnit.MILLIS)))
+                .signWith(key, Jwts.SIG.HS256)
+                .compact();
+    }
+
     public String generateRefreshToken(String googleId, UserType role) {
-        return generateToken(TokenType.REFRESH, googleId, role, jwtProperties.getRefreshExpiration());
+        String refreshToken = generateToken(TokenType.REFRESH, googleId, role, jwtProperties.getRefreshExpiration());
+        redisRefreshTokenService.setRefreshToken(refreshToken, Duration.ofMillis(jwtProperties.getRefreshExpiration()));
+        return refreshToken;
     }
 
 }

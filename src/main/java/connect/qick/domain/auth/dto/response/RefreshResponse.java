@@ -10,4 +10,6 @@ import lombok.Getter;
 public class RefreshResponse {
     @Schema(description = "새로 발급된 Access Token", example = "eyJhbGciOiJIUzI1NiJ9...")
     private String accessToken;
+    @Schema(description = "새로 발급된 Refresh Token", example = "eyJhbGciOiJIUzI1NiJ9...")
+    private String refreshToken;
 }
