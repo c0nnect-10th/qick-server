@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService {
         if(user.getUserStatus() == UserStatus.ACTIVE ) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
-        user.updateUserProfile(request);
+        user.signupStudent(request);
         user.setUserType(UserType.STUDENT);
         user.setUserStatus(UserStatus.ACTIVE);
         //TODO: blacklist 추가
