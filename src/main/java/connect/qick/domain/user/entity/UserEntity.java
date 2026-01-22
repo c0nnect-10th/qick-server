@@ -15,7 +15,6 @@ import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -130,8 +129,16 @@ public class UserEntity extends Base {
         if (request.name() != null) this.name = request.name();
         if (request.classroom() != null) setClassroom(request.classroom());
     }
-    public void updateUserProfile(SignupStudentRequest request) {
+    public void signupStudent(SignupStudentRequest request) {
+        String classroom = request.classroom();
+        checkClassroom(classroom);
+
         this.name = request.name();
+        this.userType = UserType.STUDENT;
+        this.userStatus = UserStatus.ACTIVE;
+        this.grade = Integer.parseInt(classroom.substring(0, 1));
+        this.classNumber = Integer.parseInt(classroom.substring(1, 2));
+        this.number = Integer.parseInt(classroom.substring(2));
         setClassroom(request.classroom());
     }
 
@@ -149,6 +156,12 @@ public class UserEntity extends Base {
         work.addApplication(application);
 
         return application;
+    }
+
+    private void checkClassroom(String classroom) {
+        if (classroom.length() != 4 || classroom.startsWith("0")) {
+            throw new UserException(UserStatusCode.INVALID_CLASSROOM);
+        }
     }
 
 }

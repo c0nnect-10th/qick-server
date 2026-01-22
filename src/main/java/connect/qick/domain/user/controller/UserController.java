@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -199,7 +200,7 @@ public class UserController {
     })
     public ResponseEntity<ApiResponse<?>> signupUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody SignupStudentRequest request
+            @RequestBody @Valid SignupStudentRequest request
     ) {
         userService.signupStudent(userDetails.getGoogleId(), request);
         return ResponseEntity.ok(
@@ -282,7 +283,7 @@ public class UserController {
     })
     public ResponseEntity<ApiResponse<UserResponse>> updateUser(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody UpdateStudentRequest request
+            @RequestBody @Valid UpdateStudentRequest request
         ) {
         UserResponse updatedUser = userService.updateStudent(userDetails.getGoogleId(), request);
         return ResponseEntity.ok(ApiResponse.ok(updatedUser));
