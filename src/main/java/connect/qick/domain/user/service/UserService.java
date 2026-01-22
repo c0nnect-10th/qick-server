@@ -2,6 +2,7 @@ package connect.qick.domain.user.service;
 
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.SignupResponse;
 import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
@@ -21,7 +22,7 @@ public interface UserService {
     UserEntity getUserByUserId(Long userId);
 
     @Transactional
-    void signupStudent(String googleId, SignupStudentRequest request);
+    SignupResponse signupStudent(String googleId, SignupStudentRequest request);
 
     @Transactional
     UserResponse updateStudent(String googleId, UpdateStudentRequest request);

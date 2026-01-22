@@ -4,6 +4,7 @@ import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.SignupResponse;
 import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
@@ -12,6 +13,7 @@ import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.repository.UserRepository;
+import connect.qick.global.security.jwt.JwtProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +29,7 @@ import java.util.stream.IntStream;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final JwtProvider jwtProvider;
 
     @Override
     public boolean checkGoogleId(String googleId) {
@@ -54,14 +57,17 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void signupStudent(String googleId, SignupStudentRequest request) {
+    public SignupResponse signupStudent(String googleId, SignupStudentRequest request) {
         UserEntity user = getUserByGoogleId(googleId)
                 .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
         if(user.getUserStatus() == UserStatus.ACTIVE) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
+
         user.signupStudent(request);
-        //TODO: blacklist 추가
+        String access = jwtProvider.generateAccessToken(googleId, UserType.STUDENT);
+        String refresh = jwtProvider.generateRefreshToken(googleId, UserType.STUDENT);
+        return new SignupResponse(access, refresh);
     }
 
     @Transactional
