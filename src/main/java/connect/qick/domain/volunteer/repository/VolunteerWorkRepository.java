@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEntity, Long> {
 
@@ -101,4 +102,5 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
 
     List<VolunteerWorkEntity> findByStatusAndStartTimeBetween(WorkStatus status, LocalDateTime start, LocalDateTime end);
 
+    Optional<VolunteerWorkEntity> findByIdAndStatus(Long workId, WorkStatus workStatus);
 }

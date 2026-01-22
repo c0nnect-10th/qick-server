@@ -7,6 +7,7 @@ import connect.qick.domain.volunteer.dto.response.MyApplicationResponse;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
+import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
@@ -33,8 +34,8 @@ public class VolunteerApplicationService {
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
         UserEntity student = userService.getUserByGoogleId(googleId);
-        VolunteerWorkEntity work = volunteerWorkRepository.findById(workId)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+        VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatus(workId, WorkStatus.RECRUITING)
+            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         // 이미 신청했는지 확인
         if (applicationRepository.existsByVolunteerWorkIdAndStudentIdAndStatus(
