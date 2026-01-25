@@ -67,8 +67,16 @@ public class VolunteerApplicationService {
      */
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
         VolunteerApplicationEntity application = findById(applicationId);
-
         application.cancel(cancelReason, googleId);
+
+        // 선생님에게 푸시 알림 전송
+        UserEntity teacher = application.getVolunteerWork().getTeacher();
+        if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
+            String title = "봉사활동 신청 취소";
+            String body = String.format("%s 학생이 '%s' 봉사활동 신청을 취소했습니다. (사유: %s)",
+                    application.getStudent().getName(), application.getVolunteerWork().getWorkName(), cancelReason);
+            pushAlarmUtil.send(teacher.getFcmToken(), title, body);
+        }
     }
 
     /**
