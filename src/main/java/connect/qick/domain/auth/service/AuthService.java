@@ -74,6 +74,9 @@ public class AuthService {
         String googleId = token.getPayload().getSubject();
         String email = token.getPayload().getEmail();
         String name = token.getPayload().get("name").toString();
+        String profileImageUrl = token.getPayload().get("picture") != null
+                ? token.getPayload().get("picture").toString()
+                : null;
         return userService.getUserByGoogleId(googleId)
             .orElseGet(() -> userService.saveUser(
                 UserEntity.builder()
@@ -82,6 +85,7 @@ public class AuthService {
                     .googleId(googleId)
                     .name(name)
                     .email(email)
+                    .profileImageUrl(profileImageUrl)
                     .build()));
     }
 
