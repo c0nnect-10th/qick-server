@@ -36,7 +36,7 @@ public class VolunteerApplicationService {
         // 학생 정보 조회
         UserEntity student = userService.getUserByGoogleId(googleId);
         VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatus(workId, WorkStatus.RECRUITING)
-            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         // 이미 신청했는지 확인
         if (applicationRepository.existsByVolunteerWorkIdAndStudentIdAndStatus(
@@ -54,6 +54,17 @@ public class VolunteerApplicationService {
                 String title = String.format("%s", work.getWorkName());
                 String body = String.format("%s 학생이 모집에 응했습니다.", student.getName());
                 notificationService.createAndSendNotification(teacher, title, body);
+            }
+
+            // 정원 충족 시 모집 마감 처리 및 알림
+            if (work.getCurrentParticipants() >= work.getMaxParticipants()) {
+                work.setStatus(WorkStatus.RECRUITMENT_CLOSED);
+                volunteerWorkRepository.save(work);
+                if (teacher != null) {
+                    String title = String.format("'%s'", work.getWorkName());
+                    String body = "정원이 모두 충족되어 모집이 마감되었습니다.";
+                    notificationService.createAndSendNotification(teacher, title, body);
+                }
             }
 
             return ApplicationResponse.from(application);
