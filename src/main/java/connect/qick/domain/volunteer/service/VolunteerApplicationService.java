@@ -13,6 +13,7 @@ import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
 import connect.qick.global.util.PushAlarmUtil;
+import connect.qick.domain.notification.service.NotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class VolunteerApplicationService {
     private final VolunteerApplicationRepository applicationRepository;
     private final VolunteerWorkRepository volunteerWorkRepository;
     private final UserService userService;
-    private final PushAlarmUtil pushAlarmUtil;
+    private final NotificationService notificationService;
 
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
@@ -47,12 +48,12 @@ public class VolunteerApplicationService {
         synchronized (this) {
             VolunteerApplicationEntity application = student.applyVolunteer(work);
 
-            // 선생님에게 푸시 알림 전송
+            // 선생님에게 푸시 알림 전송 및 알림 내역 저장
             UserEntity teacher = work.getTeacher();
-            if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
-                String title = "새로운 봉사활동 신청";
-                String body = String.format("%s 학생이 '%s' 봉사활동을 신청했습니다.", student.getName(), work.getWorkName());
-                pushAlarmUtil.send(teacher.getFcmToken(), title, body);
+            if (teacher != null) {
+                String title = String.format("%s", work.getWorkName());
+                String body = String.format("%s 학생이 모집에 응했습니다.", student.getName());
+                notificationService.createAndSendNotification(teacher, title, body);
             }
 
             return ApplicationResponse.from(application);
@@ -69,13 +70,13 @@ public class VolunteerApplicationService {
         VolunteerApplicationEntity application = findById(applicationId);
         application.cancel(cancelReason, googleId);
 
-        // 선생님에게 푸시 알림 전송
+        // 선생님에게 푸시 알림 전송 및 알림 내역 저장
         UserEntity teacher = application.getVolunteerWork().getTeacher();
-        if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
-            String title = "봉사활동 신청 취소";
-            String body = String.format("%s 학생이 '%s' 봉사활동 신청을 취소했습니다. (사유: %s)",
-                    application.getStudent().getName(), application.getVolunteerWork().getWorkName(), cancelReason);
-            pushAlarmUtil.send(teacher.getFcmToken(), title, body);
+        if (teacher != null) {
+            String title = String.format("%s", application.getVolunteerWork().getWorkName());
+            String body = String.format("%s 학생이 '%s'의 사유로 참여를 취소했습니다.",
+                    application.getStudent().getName(), cancelReason);
+            notificationService.createAndSendNotification(teacher, title, body);
         }
     }
 
