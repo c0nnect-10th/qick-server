@@ -32,6 +32,7 @@ public class UserResponse {
         UserResponse response = new UserResponse();
         response.name = user.getName();
         response.email = user.getEmail();
+        response.profileImageUrl = user.getProfileImageUrl();
         if (user.getUserType() == UserType.STUDENT) {
             response.totalPoints = user.getTotalPoints();
             response.totalCount = user.getTotalCount();
