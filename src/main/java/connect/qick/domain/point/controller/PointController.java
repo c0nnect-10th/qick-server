@@ -125,8 +125,7 @@ public class PointController {
     public ResponseEntity<ApiResponse<List<PointHistoryResponse>>> getMyPointHistory(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        UserEntity student = userService.getUserByGoogleId(userDetails.getGoogleId())
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+        UserEntity student = userService.getUserByGoogleId(userDetails.getGoogleId());
 
         List<PointHistoryResponse> history = pointService.getPointHistory(student.getId());
 
