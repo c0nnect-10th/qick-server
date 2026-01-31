@@ -22,6 +22,12 @@ public class NotificationService {
 
     @Transactional
     public void createAndSendNotification(UserEntity teacher, String title, String body) {
+
+        // teacher null 확인
+        if (teacher == null) {
+            return;
+        }
+
         Notification notification = Notification.builder()
                 .user(teacher)
                 .title(title)
@@ -29,7 +35,7 @@ public class NotificationService {
                 .build();
         notificationRepository.save(notification);
 
-        if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
+        if (teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
             pushAlarmUtil.send(teacher.getFcmToken(), title, body);
         }
     }
