@@ -25,8 +25,9 @@ public class VolunteerWorkScheduler {
     public void updateVolunteerWorkStatus() {
         LocalDateTime now = LocalDateTime.now();
 
+        List<WorkStatus> statusesToSearch = List.of(WorkStatus.RECRUITING, WorkStatus.RECRUITMENT_CLOSED);
         List<VolunteerWorkEntity> worksToStart = volunteerWorkRepository
-                .findByStatusAndStartTimeBefore(WorkStatus.RECRUITING, now);
+                .findByStatusInAndStartTimeBefore(statusesToSearch, now);
 
         if (!worksToStart.isEmpty()) {
             worksToStart.forEach(work -> {
