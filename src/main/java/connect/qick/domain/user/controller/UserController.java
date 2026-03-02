@@ -2,6 +2,7 @@ package connect.qick.domain.user.controller;
 
 import connect.qick.domain.auth.service.AuthService;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.SignupTeacherRequest;
 import connect.qick.domain.user.dto.request.UpdateFcmTokenRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.dto.response.SignupResponse;
@@ -214,6 +215,20 @@ public class UserController {
     ) {
         return ResponseEntity.ok(ApiResponse.ok(
             userService.signupStudent(userDetails.getGoogleId(), request)
+        ));
+    }
+
+    @PostMapping("/signup/teacher")
+    @Operation(
+            summary = "선생님 회원가입",
+            description = "신규 선생님 사용자의 이름과 5자리 코드를 검증한 뒤 가입을 완료합니다."
+    )
+    public ResponseEntity<ApiResponse<SignupResponse>> signupTeacher(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid SignupTeacherRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.ok(
+                userService.signupTeacher(userDetails.getGoogleId(), request)
         ));
     }
 

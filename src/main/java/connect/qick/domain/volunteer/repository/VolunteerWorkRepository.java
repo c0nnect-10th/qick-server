@@ -3,7 +3,9 @@ package connect.qick.domain.volunteer.repository;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -103,4 +105,25 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     List<VolunteerWorkEntity> findByStatusAndStartTimeBetween(WorkStatus status, LocalDateTime start, LocalDateTime end);
 
     Optional<VolunteerWorkEntity> findByIdAndStatus(Long workId, WorkStatus workStatus);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT w
+        FROM VolunteerWorkEntity w
+        WHERE w.id = :workId
+        AND w.status = :status
+    """)
+    Optional<VolunteerWorkEntity> findByIdAndStatusForUpdate(
+            @Param("workId") Long workId,
+            @Param("status") WorkStatus status
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT w
+        FROM VolunteerWorkEntity w
+        WHERE w.teacher.id = :teacherId
+        AND w.status in (connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING, connect.qick.domain.volunteer.enums.WorkStatus.ONGOING)
+    """)
+    List<VolunteerWorkEntity> findActiveByTeacherIdForUpdate(@Param("teacherId") Long teacherId);
 }

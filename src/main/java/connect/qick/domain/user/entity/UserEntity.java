@@ -19,6 +19,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -83,7 +84,7 @@ public class UserEntity extends Base {
 
     //==비즈니스 로직==//
     public void checkGoogleId(String googleId) {
-        if (!this.googleId.equals(googleId)) {
+        if (!Objects.equals(this.googleId, googleId)) {
             throw new AuthException(AuthStatusCode.ACCESS_DENIED);
         }
     }
@@ -130,6 +131,29 @@ public class UserEntity extends Base {
         setClassroom(request.classroom());
     }
 
+    public void signupTeacher(String name, String teacherCode) {
+        this.name = name;
+        this.teacherCode = teacherCode;
+        this.userType = UserType.TEACHER;
+        this.userStatus = UserStatus.ACTIVE;
+    }
+
+    public void softDelete() {
+        this.userStatus = UserStatus.DELETED;
+        this.userType = UserType.USER;
+        this.googleId = null;
+        this.email = null;
+        this.teacherCode = null;
+        this.fcmToken = null;
+        this.profileImageUrl = null;
+        this.name = "탈퇴한 사용자";
+        this.grade = null;
+        this.classNumber = null;
+        this.number = null;
+        this.totalPoints = 0;
+        this.totalCount = 0;
+    }
+
 
     public VolunteerApplicationEntity applyVolunteer(VolunteerWorkEntity work) {
         checkIsStudent();
@@ -153,5 +177,3 @@ public class UserEntity extends Base {
     }
 
 }
-
-

@@ -78,6 +78,12 @@ public class VolunteerWorkEntity extends Base {
         currentParticipants--;
     }
 
+    public void decreaseCurrentParticipantsForSystemCancel() {
+        if (currentParticipants > 0) {
+            currentParticipants--;
+        }
+    }
+
     public void setTeacher(UserEntity teacher) {
         this.teacher = teacher;
         teacher.getVolunteerWorks().add(this);
@@ -117,6 +123,16 @@ public class VolunteerWorkEntity extends Base {
         if (status != WorkStatus.RECRUITING) {
             throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
         }
+    }
+
+    public void cancelByTeacherWithdrawal(String cancelReason) {
+        if (status != WorkStatus.RECRUITING && status != WorkStatus.ONGOING) {
+            return;
+        }
+
+        boolean decreaseParticipants = status == WorkStatus.RECRUITING;
+        applications.forEach(application -> application.cancelBySystem(cancelReason, decreaseParticipants));
+        status = WorkStatus.CANCELLED;
     }
 
     //==생성 메서드==//

@@ -97,7 +97,7 @@ public class AuthService {
         String profileImageUrl = token.getPayload().get("picture") != null
                 ? token.getPayload().get("picture").toString()
                 : null;
-        return userService.getUserByGoogleId(googleId)
+        return userService.getUser(googleId)
             .orElseGet(() -> userService.saveUser(
                 UserEntity.builder()
                     .userStatus(UserStatus.TEMP)
