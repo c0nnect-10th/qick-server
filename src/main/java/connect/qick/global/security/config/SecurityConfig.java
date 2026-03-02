@@ -61,7 +61,7 @@ public class SecurityConfig {
             .requestMatchers("/login/**").permitAll()
             .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
             .requestMatchers("/user/student").hasRole("STUDENT")
-            .requestMatchers("/volunteer/create", "/volunteer/delete/*", "/volunteer/*/complete", "/volunteer/my").hasRole("TEACHER")
+            .requestMatchers("/volunteer/create", "/volunteer/update/*", "/volunteer/delete/*", "/volunteer/*/complete", "/volunteer/my").hasRole("TEACHER")
             .requestMatchers("/volunteer/application/**").hasRole("STUDENT")
             .requestMatchers("/point/**").hasRole("STUDENT")
             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()

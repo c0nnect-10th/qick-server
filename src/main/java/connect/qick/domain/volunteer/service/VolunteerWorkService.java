@@ -4,6 +4,7 @@ import connect.qick.domain.point.service.PointService;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
+import connect.qick.domain.volunteer.dto.request.UpdateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.response.*;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
@@ -73,6 +74,13 @@ public class VolunteerWorkService {
             .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         work.cancelBy(googleId);
+    }
+
+    public VolunteerWorkResponse updateVolunteerWork(Long workId, String googleId, UpdateVolunteerWorkRequest request) {
+        VolunteerWorkEntity work = findById(workId);
+        work.validateTeacher(googleId);
+        work.updateByTeacher(request);
+        return VolunteerWorkResponse.from(work);
     }
 
     /**
