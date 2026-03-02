@@ -41,6 +41,9 @@ public class UserEntity extends Base {
     @Column
     private String name;
 
+    @Column
+    private String profileImageUrl;
+
     @Enumerated(value = EnumType.STRING)
     @Column(name = "user_type", nullable = false)
     @Builder.Default
