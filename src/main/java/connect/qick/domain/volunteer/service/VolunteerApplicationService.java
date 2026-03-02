@@ -33,8 +33,8 @@ public class VolunteerApplicationService {
 
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
-        UserEntity student = userService.getUserByGoogleId(googleId);
-        VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatus(workId, WorkStatus.RECRUITING)
+        UserEntity student = userService.getAuthenticatedUserByGoogleId(googleId);
+        VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatusForUpdate(workId, WorkStatus.RECRUITING)
             .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         // 이미 신청했는지 확인
@@ -43,20 +43,18 @@ public class VolunteerApplicationService {
             throw new VolunteerException(VolunteerStatusCode.ALREADY_APPLIED);
         }
 
-        // 모집 인원 확인 (동시성 고려)
-        synchronized (this) {
-            VolunteerApplicationEntity application = student.applyVolunteer(work);
+        VolunteerApplicationEntity application = student.applyVolunteer(work);
+        VolunteerApplicationEntity savedApplication = applicationRepository.save(application);
 
-            // 선생님에게 푸시 알림 전송
-            UserEntity teacher = work.getTeacher();
-            if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
-                String title = "새로운 봉사활동 신청";
-                String body = String.format("%s 학생이 '%s' 봉사활동을 신청했습니다.", student.getName(), work.getWorkName());
-                pushAlarmUtil.send(teacher.getFcmToken(), title, body);
-            }
-
-            return ApplicationResponse.from(application);
+        // 선생님에게 푸시 알림 전송
+        UserEntity teacher = work.getTeacher();
+        if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
+            String title = "새로운 봉사활동 신청";
+            String body = String.format("%s 학생이 '%s' 봉사활동을 신청했습니다.", student.getName(), work.getWorkName());
+            pushAlarmUtil.send(teacher.getFcmToken(), title, body);
         }
+
+        return ApplicationResponse.from(savedApplication);
     }
 
     /**
@@ -67,6 +65,8 @@ public class VolunteerApplicationService {
      */
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
         VolunteerApplicationEntity application = findById(applicationId);
+        volunteerWorkRepository.findByIdForUpdate(application.getVolunteerWork().getId())
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         application.cancel(cancelReason, googleId);
     }

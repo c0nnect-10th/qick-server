@@ -73,7 +73,6 @@ class VolunteerWorkRepositoryTest {
                     .currentParticipants(0)
                     .difficulty(WorkDifficulty.EASY)
                     .description("설명 " + i)
-                    .points(10)
                     .status(WorkStatus.RECRUITING)
                     .startTime(LocalDateTime.now().plusDays(i))
                     .build();

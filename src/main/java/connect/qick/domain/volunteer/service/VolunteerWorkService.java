@@ -4,6 +4,7 @@ import connect.qick.domain.point.service.PointService;
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
+import connect.qick.domain.volunteer.dto.request.UpdateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.response.*;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.dto.response.CreateVolunteerWorkResponse;
@@ -56,7 +57,7 @@ public class VolunteerWorkService {
             String googleId,
             CreateVolunteerWorkRequest request
     ) {
-        UserEntity teacher =  userService.getUserByGoogleId(googleId);
+        UserEntity teacher =  userService.getAuthenticatedUserByGoogleId(googleId);
         VolunteerWorkEntity work = VolunteerWorkEntity.createVolunteerWork(teacher, request);
         volunteerWorkRepository.save(work);
 
@@ -73,6 +74,13 @@ public class VolunteerWorkService {
             .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         work.cancelBy(googleId);
+    }
+
+    public VolunteerWorkResponse updateVolunteerWork(Long workId, String googleId, UpdateVolunteerWorkRequest request) {
+        VolunteerWorkEntity work = findById(workId);
+        work.validateTeacher(googleId);
+        work.updateByTeacher(request);
+        return VolunteerWorkResponse.from(work);
     }
 
     /**
@@ -136,7 +144,7 @@ public class VolunteerWorkService {
      * @return List<VolunteerWorkEntity>
      */
     public List<VolunteerWorkEntity> getMyVolunteerWorks(String googleId, WorkStatus status) {
-        UserEntity teacher = userService.getUserByGoogleId(googleId);
+        UserEntity teacher = userService.getAuthenticatedUserByGoogleId(googleId);
 
         if (status == null) {
             return volunteerWorkRepository.findAllOrderByStatus(teacher.getId());

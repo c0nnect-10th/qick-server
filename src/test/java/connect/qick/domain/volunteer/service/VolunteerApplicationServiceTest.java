@@ -4,6 +4,7 @@ import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.repository.UserRepository;
+import connect.qick.domain.volunteer.dto.response.ApplicationResponse;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
@@ -112,6 +113,19 @@ class VolunteerApplicationServiceTest {
         assertThat(work.getCurrentParticipants()).isEqualTo(0);
         assertThat(application.getCancelReason()).isEqualTo("test1");
         assertThat(application.getStatus()).isEqualTo(ApplicationStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("봉사활동 신청 시 applicationId 반환")
+    void applyVolunteerReturnsApplicationId() {
+        VolunteerWorkEntity work = volunteerWorks.get(0);
+        UserEntity student1 = student.get(0);
+
+        ApplicationResponse response =
+                volunteerApplicationService.applyToVolunteer(work.getId(), student1.getGoogleId());
+
+        assertThat(response.getApplicationId()).isNotNull();
+        assertThat(volunteerApplicationRepository.findById(response.getApplicationId())).isPresent();
     }
 
     @Test

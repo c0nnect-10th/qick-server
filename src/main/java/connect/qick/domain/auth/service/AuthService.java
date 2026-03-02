@@ -82,7 +82,7 @@ public class AuthService {
 
         Claims claims = jwtProvider.getClaims(refreshToken).getPayload();
         jwtExtract.checkTokenType(claims, TokenType.REFRESH);
-        UserEntity user = userService.getUserByGoogleId(claims.getSubject());
+        UserEntity user = userService.getAuthenticatedUserByGoogleId(claims.getSubject());
 
         String newAccess = jwtProvider.generateAccessToken(claims.getSubject(), user.getUserType());
         String newRefresh = jwtProvider.generateRefreshToken(claims.getSubject(), user.getUserType());
@@ -97,7 +97,7 @@ public class AuthService {
         String profileImageUrl = token.getPayload().get("picture") != null
                 ? token.getPayload().get("picture").toString()
                 : null;
-        return userService.getUserByGoogleId(googleId)
+        return userService.getUser(googleId)
             .orElseGet(() -> userService.saveUser(
                 UserEntity.builder()
                     .userStatus(UserStatus.TEMP)
