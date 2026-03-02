@@ -33,7 +33,7 @@ public class VolunteerApplicationService {
 
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
-        UserEntity student = userService.getUserByGoogleId(googleId);
+        UserEntity student = userService.getAuthenticatedUserByGoogleId(googleId);
         VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatusForUpdate(workId, WorkStatus.RECRUITING)
             .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
@@ -65,6 +65,8 @@ public class VolunteerApplicationService {
      */
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
         VolunteerApplicationEntity application = findById(applicationId);
+        volunteerWorkRepository.findByIdForUpdate(application.getVolunteerWork().getId())
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         application.cancel(cancelReason, googleId);
     }

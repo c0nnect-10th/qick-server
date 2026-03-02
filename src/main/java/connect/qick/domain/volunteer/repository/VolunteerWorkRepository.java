@@ -111,6 +111,14 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         SELECT w
         FROM VolunteerWorkEntity w
         WHERE w.id = :workId
+    """)
+    Optional<VolunteerWorkEntity> findByIdForUpdate(@Param("workId") Long workId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT w
+        FROM VolunteerWorkEntity w
+        WHERE w.id = :workId
         AND w.status = :status
     """)
     Optional<VolunteerWorkEntity> findByIdAndStatusForUpdate(

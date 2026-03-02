@@ -82,7 +82,7 @@ public class AuthService {
 
         Claims claims = jwtProvider.getClaims(refreshToken).getPayload();
         jwtExtract.checkTokenType(claims, TokenType.REFRESH);
-        UserEntity user = userService.getUserByGoogleId(claims.getSubject());
+        UserEntity user = userService.getAuthenticatedUserByGoogleId(claims.getSubject());
 
         String newAccess = jwtProvider.generateAccessToken(claims.getSubject(), user.getUserType());
         String newRefresh = jwtProvider.generateRefreshToken(claims.getSubject(), user.getUserType());

@@ -150,6 +150,7 @@ public class VolunteerWorkEntity extends Base {
 
         boolean decreaseParticipants = status == WorkStatus.RECRUITING;
         applications.forEach(application -> application.cancelBySystem(cancelReason, decreaseParticipants));
+        this.currentParticipants = 0;
         status = WorkStatus.CANCELLED;
     }
 

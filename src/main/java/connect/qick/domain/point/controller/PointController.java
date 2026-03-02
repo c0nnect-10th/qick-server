@@ -125,7 +125,7 @@ public class PointController {
     public ResponseEntity<ApiResponse<List<PointHistoryResponse>>> getMyPointHistory(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        UserEntity student = userService.getUserByGoogleId(userDetails.getGoogleId());
+        UserEntity student = userService.getAuthenticatedUserByGoogleId(userDetails.getGoogleId());
 
         List<PointHistoryResponse> history = pointService.getPointHistory(student.getId());
 

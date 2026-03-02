@@ -49,7 +49,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity getUserByGoogleId(String googleId) {
         return userRepository.findByGoogleId(googleId)
-            .orElseThrow(() -> new AuthException(AuthStatusCode.UNAUTHORIZED));
+            .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+    }
+
+    @Override
+    public UserEntity getAuthenticatedUserByGoogleId(String googleId) {
+        return userRepository.findByGoogleId(googleId)
+                .orElseThrow(() -> new AuthException(AuthStatusCode.UNAUTHORIZED));
     }
 
     @Override
@@ -60,7 +66,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserInfo(String googleId) {
         return UserResponse.from(
-                getUserByGoogleId(googleId)
+                getAuthenticatedUserByGoogleId(googleId)
         );
     }
 
@@ -73,7 +79,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public SignupResponse signupStudent(String googleId, SignupStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId);
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
         if(user.getUserStatus() == UserStatus.ACTIVE) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
@@ -87,7 +93,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public SignupResponse signupTeacher(String googleId, SignupTeacherRequest request) {
-        UserEntity user = getUserByGoogleId(googleId);
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
         if (user.getUserStatus() == UserStatus.ACTIVE) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
@@ -107,7 +113,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserResponse updateStudent(String googleId, UpdateStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId);
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
         user.updateUserProfile(request);
         return UserResponse.from(user);
     }
@@ -125,10 +131,20 @@ public class UserServiceImpl implements UserService {
 
         if (user.getUserType() == UserType.STUDENT) {
             List<VolunteerApplicationEntity> appliedApplications =
-                    volunteerApplicationRepository.findByStudentIdAndStatus(
+                    volunteerApplicationRepository.findByStudentIdAndStatusForUpdate(
                             user.getId(),
                             ApplicationStatus.APPLIED
                     );
+
+            List<Long> workIdsToLock = appliedApplications.stream()
+                    .map(application -> application.getVolunteerWork().getId())
+                    .distinct()
+                    .sorted()
+                    .toList();
+            for (Long workId : workIdsToLock) {
+                volunteerWorkRepository.findByIdForUpdate(workId);
+            }
+
             for (VolunteerApplicationEntity application : appliedApplications) {
                 application.cancelByStudentWithdrawal("회원 탈퇴로 신청이 자동 취소되었습니다.");
             }
@@ -147,7 +163,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void updateFcmToken(String googleId, String fcmToken) {
-        UserEntity user = getUserByGoogleId(googleId);
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
 
         if (!isValidFcmToken(fcmToken)) {
             return;

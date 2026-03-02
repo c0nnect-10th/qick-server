@@ -19,6 +19,7 @@ public interface UserService {
     boolean checkGoogleId(String googleId);
 
     UserEntity getUserByGoogleId(String googleId);
+    UserEntity getAuthenticatedUserByGoogleId(String googleId);
 
     Optional<UserEntity> getUser(String googleId);
 

@@ -85,9 +85,12 @@ class VolunteerConcurrencyIntegrationTest {
         }
 
         start.countDown();
-        done.await(20, TimeUnit.SECONDS);
+        boolean allTasksCompleted = done.await(20, TimeUnit.SECONDS);
         pool.shutdown();
-        pool.awaitTermination(1, TimeUnit.MINUTES);
+        boolean poolTerminated = pool.awaitTermination(1, TimeUnit.MINUTES);
+
+        assertThat(allTasksCompleted).isTrue();
+        assertThat(poolTerminated).isTrue();
 
         VolunteerWorkEntity updated = volunteerWorkRepository.findById(work.getId()).orElseThrow();
         List<VolunteerApplicationEntity> applications =
@@ -137,9 +140,12 @@ class VolunteerConcurrencyIntegrationTest {
         });
 
         start.countDown();
-        done.await(20, TimeUnit.SECONDS);
+        boolean allTasksCompleted = done.await(20, TimeUnit.SECONDS);
         pool.shutdown();
-        pool.awaitTermination(1, TimeUnit.MINUTES);
+        boolean poolTerminated = pool.awaitTermination(1, TimeUnit.MINUTES);
+
+        assertThat(allTasksCompleted).isTrue();
+        assertThat(poolTerminated).isTrue();
 
         VolunteerWorkEntity updatedWork = volunteerWorkRepository.findById(work.getId()).orElseThrow();
         List<VolunteerApplicationEntity> applications =

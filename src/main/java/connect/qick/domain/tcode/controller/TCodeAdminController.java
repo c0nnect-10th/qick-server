@@ -28,7 +28,7 @@ public class TCodeAdminController {
     @Operation(summary = "TCode 생성", description = "새로운 선생님 TCode를 생성합니다.")
     public ResponseEntity<ApiResponse<TCodeResponse>> createTCode(@RequestBody @Valid CreateTCodeRequest request) {
         TCodeResponse response = tCodeService.createTCode(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(response));
     }
 
     @GetMapping

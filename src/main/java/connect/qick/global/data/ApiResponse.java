@@ -14,6 +14,10 @@ public record ApiResponse<T>(
     return new ApiResponse<>(HttpStatus.OK.value(), data, null);
   }
 
+  public static <T> ApiResponse<T> created(T data) {
+    return new ApiResponse<>(HttpStatus.CREATED.value(), data, null);
+  }
+
   public static ApiResponse<Void> error(HttpStatus status, String code, String message) {
     return new ApiResponse<>(status.value(), null, ErrorResponse.of(code, message));
   }
@@ -26,4 +30,3 @@ public record ApiResponse<T>(
     return new ApiResponse<>(status.value(), null, error);
   }
 }
-

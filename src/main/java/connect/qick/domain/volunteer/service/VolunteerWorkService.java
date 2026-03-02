@@ -57,7 +57,7 @@ public class VolunteerWorkService {
             String googleId,
             CreateVolunteerWorkRequest request
     ) {
-        UserEntity teacher =  userService.getUserByGoogleId(googleId);
+        UserEntity teacher =  userService.getAuthenticatedUserByGoogleId(googleId);
         VolunteerWorkEntity work = VolunteerWorkEntity.createVolunteerWork(teacher, request);
         volunteerWorkRepository.save(work);
 
@@ -144,7 +144,7 @@ public class VolunteerWorkService {
      * @return List<VolunteerWorkEntity>
      */
     public List<VolunteerWorkEntity> getMyVolunteerWorks(String googleId, WorkStatus status) {
-        UserEntity teacher = userService.getUserByGoogleId(googleId);
+        UserEntity teacher = userService.getAuthenticatedUserByGoogleId(googleId);
 
         if (status == null) {
             return volunteerWorkRepository.findAllOrderByStatus(teacher.getId());
