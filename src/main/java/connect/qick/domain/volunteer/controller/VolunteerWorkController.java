@@ -2,6 +2,7 @@ package connect.qick.domain.volunteer.controller;
 
 import connect.qick.domain.volunteer.dto.request.CompleteVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
+import connect.qick.domain.volunteer.dto.request.UpdateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.dto.response.*;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkStatus;
@@ -198,6 +199,21 @@ public class VolunteerWorkController {
                 volunteerWorkService.create(userDetails.getGoogleId(), request)
             )
         );
+    }
+
+    @PatchMapping("/update/{workId}")
+    @Operation(summary = "봉사활동 수정", description = "RECRUITING 상태의 봉사활동만 수정할 수 있습니다.")
+    public ResponseEntity<ApiResponse<VolunteerWorkResponse>> updateVolunteerWork(
+            @PathVariable Long workId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody @Valid UpdateVolunteerWorkRequest request
+    ) {
+        VolunteerWorkResponse response = volunteerWorkService.updateVolunteerWork(
+                workId,
+                userDetails.getGoogleId(),
+                request
+        );
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @DeleteMapping("/delete/{workId}")

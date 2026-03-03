@@ -3,7 +3,9 @@ package connect.qick.domain.volunteer.repository;
 import connect.qick.domain.volunteer.dto.response.VolunteerWorkSummaryResponse;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.WorkStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -78,12 +80,6 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
             LocalDateTime startTime
     );
 
-    // 스케쥴러용 모집중 및 모집 마감 상태의 봉사활동을 한 번에 조회하는 것
-    List<VolunteerWorkEntity> findByStatusInAndStartTimeBefore(
-            List<WorkStatus> statuses,
-            LocalDateTime startTime
-    );
-
     // 선생님이 생성한 봉사활동 목록 조회 하는데 상태별로 필터링 하는거
     List<VolunteerWorkEntity> findByTeacherIdAndStatus(Long teacherId, WorkStatus status);
 
@@ -109,4 +105,33 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     List<VolunteerWorkEntity> findByStatusAndStartTimeBetween(WorkStatus status, LocalDateTime start, LocalDateTime end);
 
     Optional<VolunteerWorkEntity> findByIdAndStatus(Long workId, WorkStatus workStatus);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT w
+        FROM VolunteerWorkEntity w
+        WHERE w.id = :workId
+    """)
+    Optional<VolunteerWorkEntity> findByIdForUpdate(@Param("workId") Long workId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT w
+        FROM VolunteerWorkEntity w
+        WHERE w.id = :workId
+        AND w.status = :status
+    """)
+    Optional<VolunteerWorkEntity> findByIdAndStatusForUpdate(
+            @Param("workId") Long workId,
+            @Param("status") WorkStatus status
+    );
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT w
+        FROM VolunteerWorkEntity w
+        WHERE w.teacher.id = :teacherId
+        AND w.status in (connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING, connect.qick.domain.volunteer.enums.WorkStatus.ONGOING)
+    """)
+    List<VolunteerWorkEntity> findActiveByTeacherIdForUpdate(@Param("teacherId") Long teacherId);
 }

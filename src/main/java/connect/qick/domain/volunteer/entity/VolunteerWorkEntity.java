@@ -3,6 +3,7 @@ package connect.qick.domain.volunteer.entity;
 
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.volunteer.dto.request.CreateVolunteerWorkRequest;
+import connect.qick.domain.volunteer.dto.request.UpdateVolunteerWorkRequest;
 import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.exception.VolunteerException;
@@ -78,6 +79,12 @@ public class VolunteerWorkEntity extends Base {
         currentParticipants--;
     }
 
+    public void decreaseCurrentParticipantsForSystemCancel() {
+        if (currentParticipants > 0) {
+            currentParticipants--;
+        }
+    }
+
     public void setTeacher(UserEntity teacher) {
         this.teacher = teacher;
         teacher.getVolunteerWorks().add(this);
@@ -117,6 +124,34 @@ public class VolunteerWorkEntity extends Base {
         if (status != WorkStatus.RECRUITING) {
             throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
         }
+    }
+
+    public void updateByTeacher(UpdateVolunteerWorkRequest request) {
+        if (status != WorkStatus.RECRUITING) {
+            throw new VolunteerException(VolunteerStatusCode.INVALID_WORK_STATUS);
+        }
+
+        if (request.maxParticipants() != null && request.maxParticipants() < currentParticipants) {
+            throw new VolunteerException(VolunteerStatusCode.MAX_PARTICIPANTS_BELOW_CURRENT);
+        }
+
+        if (request.name() != null) this.workName = request.name();
+        if (request.maxParticipants() != null) this.maxParticipants = request.maxParticipants();
+        if (request.location() != null) this.location = request.location();
+        if (request.description() != null) this.description = request.description();
+        if (request.difficulty() != null) this.difficulty = request.difficulty();
+        if (request.startTime() != null) this.startTime = request.startTime();
+    }
+
+    public void cancelByTeacherWithdrawal(String cancelReason) {
+        if (status != WorkStatus.RECRUITING && status != WorkStatus.ONGOING) {
+            return;
+        }
+
+        boolean decreaseParticipants = status == WorkStatus.RECRUITING;
+        applications.forEach(application -> application.cancelBySystem(cancelReason, decreaseParticipants));
+        this.currentParticipants = 0;
+        status = WorkStatus.CANCELLED;
     }
 
     //==생성 메서드==//

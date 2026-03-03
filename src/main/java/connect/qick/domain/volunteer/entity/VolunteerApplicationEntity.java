@@ -2,6 +2,7 @@ package connect.qick.domain.volunteer.entity;
 
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
+import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.global.entity.Base;
@@ -109,6 +110,24 @@ public class VolunteerApplicationEntity extends Base {
 
         this.volunteerWork.cancelApplication();
 
+    }
+
+    public void cancelByStudentWithdrawal(String cancelReason) {
+        cancelBySystem(cancelReason, volunteerWork.getStatus() == WorkStatus.RECRUITING);
+    }
+
+    public void cancelBySystem(String cancelReason, boolean decreaseParticipants) {
+        if (this.status != ApplicationStatus.APPLIED) {
+            return;
+        }
+
+        this.status = ApplicationStatus.CANCELLED;
+        this.cancelReason = cancelReason;
+        this.cancelledAt = LocalDateTime.now();
+
+        if (decreaseParticipants) {
+            this.volunteerWork.decreaseCurrentParticipantsForSystemCancel();
+        }
     }
 
 }

@@ -2,12 +2,19 @@ package connect.qick.domain.user.service;
 
 import connect.qick.domain.auth.exception.AuthException;
 import connect.qick.domain.auth.exception.AuthStatusCode;
+import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.ApplicationStatus;
+import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
+import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.SignupTeacherRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.dto.response.SignupResponse;
 import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
+import connect.qick.domain.tcode.service.TCodeService;
 import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
@@ -30,6 +37,9 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final JwtProvider jwtProvider;
+    private final TCodeService tCodeService;
+    private final VolunteerApplicationRepository volunteerApplicationRepository;
+    private final VolunteerWorkRepository volunteerWorkRepository;
 
     @Override
     public boolean checkGoogleId(String googleId) {
@@ -43,6 +53,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserEntity getAuthenticatedUserByGoogleId(String googleId) {
+        return userRepository.findByGoogleId(googleId)
+                .orElseThrow(() -> new AuthException(AuthStatusCode.UNAUTHORIZED));
+    }
+
+    @Override
     public Optional<UserEntity> getUser(String googleId) {
         return userRepository.findByGoogleId(googleId);
     }
@@ -50,7 +66,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserInfo(String googleId) {
         return UserResponse.from(
-                getUserByGoogleId(googleId)
+                getAuthenticatedUserByGoogleId(googleId)
         );
     }
 
@@ -63,7 +79,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public SignupResponse signupStudent(String googleId, SignupStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId);
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
         if(user.getUserStatus() == UserStatus.ACTIVE) {
             throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
         }
@@ -76,8 +92,28 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
+    public SignupResponse signupTeacher(String googleId, SignupTeacherRequest request) {
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
+        if (user.getUserStatus() == UserStatus.ACTIVE) {
+            throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
+        }
+
+        String teacherName = request.name().trim();
+        String teacherCode = request.teacherCode().trim();
+
+        // 코드를 비관적 락으로 조회 후 같은 트랜잭션에서 소모해 중복 가입을 방지한다.
+        tCodeService.verifyTCode(teacherCode, teacherName);
+
+        user.signupTeacher(teacherName, teacherCode);
+        String access = jwtProvider.generateAccessToken(googleId, UserType.TEACHER);
+        String refresh = jwtProvider.generateRefreshToken(googleId, UserType.TEACHER);
+        return new SignupResponse(access, refresh);
+    }
+
+    @Transactional
+    @Override
     public UserResponse updateStudent(String googleId, UpdateStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId);
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
         user.updateUserProfile(request);
         return UserResponse.from(user);
     }
@@ -90,16 +126,44 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void deleteUser(String googleId) {
-        if (!userRepository.existsByGoogleId(googleId)) {
-            throw new UserException(UserStatusCode.NOT_FOUND);
+        UserEntity user = userRepository.findByGoogleId(googleId)
+                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
+
+        if (user.getUserType() == UserType.STUDENT) {
+            List<VolunteerApplicationEntity> appliedApplications =
+                    volunteerApplicationRepository.findByStudentIdAndStatusForUpdate(
+                            user.getId(),
+                            ApplicationStatus.APPLIED
+                    );
+
+            List<Long> workIdsToLock = appliedApplications.stream()
+                    .map(application -> application.getVolunteerWork().getId())
+                    .distinct()
+                    .sorted()
+                    .toList();
+            for (Long workId : workIdsToLock) {
+                volunteerWorkRepository.findByIdForUpdate(workId);
+            }
+
+            for (VolunteerApplicationEntity application : appliedApplications) {
+                application.cancelByStudentWithdrawal("회원 탈퇴로 신청이 자동 취소되었습니다.");
+            }
         }
-        userRepository.deleteByGoogleId(googleId);
+
+        if (user.getUserType() == UserType.TEACHER) {
+            List<VolunteerWorkEntity> teacherWorks = volunteerWorkRepository.findActiveByTeacherIdForUpdate(user.getId());
+            for (VolunteerWorkEntity teacherWork : teacherWorks) {
+                teacherWork.cancelByTeacherWithdrawal("담당 선생님 탈퇴로 봉사활동이 자동 취소되었습니다.");
+            }
+        }
+
+        user.softDelete();
     }
 
     @Transactional
     @Override
     public void updateFcmToken(String googleId, String fcmToken) {
-        UserEntity user = getUserByGoogleId(googleId);
+        UserEntity user = getAuthenticatedUserByGoogleId(googleId);
 
         if (!isValidFcmToken(fcmToken)) {
             return;

@@ -12,13 +12,11 @@ import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
-import connect.qick.global.util.PushAlarmUtil;
 import connect.qick.domain.notification.service.NotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,8 +32,8 @@ public class VolunteerApplicationService {
 
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
-        UserEntity student = userService.getUserByGoogleId(googleId);
-        VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatus(workId, WorkStatus.RECRUITING)
+        UserEntity student = userService.getAuthenticatedUserByGoogleId(googleId);
+        VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatusForUpdate(workId, WorkStatus.RECRUITING)
                 .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         // 이미 신청했는지 확인
@@ -44,35 +42,18 @@ public class VolunteerApplicationService {
             throw new VolunteerException(VolunteerStatusCode.ALREADY_APPLIED);
         }
 
-        // 모집 인원 확인 (동시성 고려)
-        synchronized (this) {
-            VolunteerApplicationEntity application = student.applyVolunteer(work);
+        VolunteerApplicationEntity application = student.applyVolunteer(work);
+        VolunteerApplicationEntity savedApplication = applicationRepository.save(application);
 
-            // 선생님에게 푸시 알림 전송 및 알림 내역 저장
-            UserEntity teacher = work.getTeacher();
-            if (teacher != null) {
-                String title = String.format("%s", work.getWorkName());
-                String body = String.format("%s 학생이 모집에 응했습니다.", student.getName());
-                notificationService.createAndSendNotification(teacher, title, body);
-
-                // 정원 충족 시 모집 마감 처리 및 알림
-                if (work.getCurrentParticipants() >= work.getMaxParticipants()) {
-                    work.setStatus(WorkStatus.RECRUITMENT_CLOSED);
-                    volunteerWorkRepository.save(work);
-                    String closedTitle = String.format("'%s'", work.getWorkName());
-                    String closedBody = "정원이 모두 충족되어 모집이 마감되었습니다.";
-                    notificationService.createAndSendNotification(teacher, closedTitle, closedBody);
-                }
-            } else {
-                // 선생님 정보가 없더라도 정원 충족 시 모집 마감 처리는 수행
-                if (work.getCurrentParticipants() >= work.getMaxParticipants()) {
-                    work.setStatus(WorkStatus.RECRUITMENT_CLOSED);
-                    volunteerWorkRepository.save(work);
-                }
-            }
-
-            return ApplicationResponse.from(application);
+        // 선생님에게 푸시 알림 전송 및 알림 내역 저장
+        UserEntity teacher = work.getTeacher();
+        if (teacher != null) {
+            String title = String.format("%s", work.getWorkName());
+            String body = String.format("%s 학생이 모집에 응했습니다.", student.getName());
+            notificationService.createAndSendNotification(teacher, title, body);
         }
+
+        return ApplicationResponse.from(savedApplication);
     }
 
     /**
@@ -83,6 +64,9 @@ public class VolunteerApplicationService {
      */
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
         VolunteerApplicationEntity application = findById(applicationId);
+        volunteerWorkRepository.findByIdForUpdate(application.getVolunteerWork().getId())
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+
         application.cancel(cancelReason, googleId);
 
         // 선생님에게 푸시 알림 전송 및 알림 내역 저장

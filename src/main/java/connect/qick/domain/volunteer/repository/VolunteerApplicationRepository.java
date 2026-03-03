@@ -4,7 +4,9 @@ import connect.qick.domain.volunteer.dto.response.ApplicationStudentResponse;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -46,6 +48,17 @@ public interface VolunteerApplicationRepository extends JpaRepository<VolunteerA
 
     // 특정 학생의 특정 상태의 신청 내역 조회
     List<VolunteerApplicationEntity> findByStudentIdAndStatus(Long studentId, ApplicationStatus status);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT a FROM VolunteerApplicationEntity a
+        WHERE a.student.id = :studentId
+        AND a.status = :status
+    """)
+    List<VolunteerApplicationEntity> findByStudentIdAndStatusForUpdate(
+            @Param("studentId") Long studentId,
+            @Param("status") ApplicationStatus status
+    );
 
     // 특정 봉사활동의 모든 신청 내역 조회
     @Query("""

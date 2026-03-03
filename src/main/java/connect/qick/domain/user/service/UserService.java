@@ -2,6 +2,7 @@ package connect.qick.domain.user.service;
 
 
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.SignupTeacherRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.dto.response.SignupResponse;
 import connect.qick.domain.user.dto.response.UserRankingResponse;
@@ -18,6 +19,7 @@ public interface UserService {
     boolean checkGoogleId(String googleId);
 
     UserEntity getUserByGoogleId(String googleId);
+    UserEntity getAuthenticatedUserByGoogleId(String googleId);
 
     Optional<UserEntity> getUser(String googleId);
 
@@ -27,6 +29,9 @@ public interface UserService {
 
     @Transactional
     SignupResponse signupStudent(String googleId, SignupStudentRequest request);
+
+    @Transactional
+    SignupResponse signupTeacher(String googleId, SignupTeacherRequest request);
 
     @Transactional
     UserResponse updateStudent(String googleId, UpdateStudentRequest request);
