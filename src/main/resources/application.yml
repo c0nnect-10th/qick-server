@@ -38,4 +38,4 @@ spring:
       port: ${REDIS_PORT:?REDIS_HOST missing}
 
 firebase:
-  service-account-key: ${FIREBASE_SERVICE_ACCOUNT_KEY_PATH:?FIREBASE_SERVICE_ACCOUNT_KEY_PATH missing}
+  service-account-json: ${FIREBASE_SERVICE_ACCOUNT_JSON:?FIREBASE_SERVICE_ACCOUNT_JSON missing}
