@@ -35,7 +35,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             handleAuthException(e.getStatusCode().getHttpStatus(), response, e);
         }
         catch (ServletException e) {
-//            handleAuthException(HttpStatus.BAD_REQUEST, response, e);
+            handleAuthException(HttpStatus.BAD_REQUEST, response, e);
         }
     }
 
@@ -46,6 +46,18 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
     ) throws IOException {
 
         ErrorResponse errorResponse = ErrorResponse.of(ex.getStatusCode().getCode(), ex.getMessage());
+        ApiResponse<Void> apiResponse = ApiResponse.error(status, errorResponse);
+
+        writer.write(status, apiResponse, response);
+    }
+
+    public void handleAuthException(
+            HttpStatus status,
+            HttpServletResponse response,
+            ServletException ex
+    ) throws IOException {
+
+        ErrorResponse errorResponse = ErrorResponse.of(status.toString(), ex.getMessage());
         ApiResponse<Void> apiResponse = ApiResponse.error(status, errorResponse);
 
         writer.write(status, apiResponse, response);

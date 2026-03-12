@@ -2,6 +2,9 @@ package connect.qick.domain.volunteer.entity;
 
 import connect.qick.domain.user.entity.UserEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
+import connect.qick.domain.volunteer.enums.WorkStatus;
+import connect.qick.domain.volunteer.exception.VolunteerException;
+import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,11 +21,11 @@ import java.time.LocalDateTime;
 public class VolunteerApplicationEntity extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "work_id", nullable = false)
+    @JoinColumn(name = "work_id")
     private VolunteerWorkEntity volunteerWork;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id")
     private UserEntity student;
 
     @Enumerated(EnumType.STRING)
@@ -54,4 +57,77 @@ public class VolunteerApplicationEntity extends Base {
             status = ApplicationStatus.APPLIED;
         }
     }
+
+    //==비즈니스 로직==//
+    public void validateStudent(String googleId) {
+        this.student.checkGoogleId(googleId);
+        this.student.checkIsStudent();
+    }
+
+    /**
+     * 봉사활동 완료
+     */
+    public void complete() {
+        status = ApplicationStatus.COMPLETED;
+        isAttended = true;
+        completedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 봉사활동 미참여
+     */
+    public void notComplete() {
+        status = ApplicationStatus.NO_SHOW;
+        isAttended = false;
+    }
+
+    public boolean isApplied() {
+        return status == ApplicationStatus.APPLIED;
+    }
+
+    public void markAttendance(boolean attended) {
+        if (status != ApplicationStatus.APPLIED) return;
+
+        if (attended) {
+            complete();
+        } else {
+            notComplete();
+        }
+    }
+
+    public void cancel (String cancelReason, String googleId) {
+        validateStudent(googleId);
+        cancel(cancelReason);
+    }
+
+    public void cancel(String cancelReason) {
+        if (this.status != ApplicationStatus.APPLIED) {
+            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
+        }
+        this.status = ApplicationStatus.CANCELLED;
+        this.cancelReason = cancelReason;
+        this.cancelledAt = LocalDateTime.now();
+
+        this.volunteerWork.cancelApplication();
+
+    }
+
+    public void cancelByStudentWithdrawal(String cancelReason) {
+        cancelBySystem(cancelReason, volunteerWork.getStatus() == WorkStatus.RECRUITING);
+    }
+
+    public void cancelBySystem(String cancelReason, boolean decreaseParticipants) {
+        if (this.status != ApplicationStatus.APPLIED) {
+            return;
+        }
+
+        this.status = ApplicationStatus.CANCELLED;
+        this.cancelReason = cancelReason;
+        this.cancelledAt = LocalDateTime.now();
+
+        if (decreaseParticipants) {
+            this.volunteerWork.decreaseCurrentParticipantsForSystemCancel();
+        }
+    }
+
 }

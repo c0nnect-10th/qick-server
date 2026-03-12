@@ -1,78 +1,52 @@
 package connect.qick.domain.user.service;
 
-import connect.qick.domain.auth.exception.AuthException;
-import connect.qick.domain.auth.exception.AuthStatusCode;
+
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
+import connect.qick.domain.user.dto.request.SignupTeacherRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
+import connect.qick.domain.user.dto.response.SignupResponse;
+import connect.qick.domain.user.dto.response.UserRankingResponse;
 import connect.qick.domain.user.dto.response.UserResponse;
 import connect.qick.domain.user.entity.UserEntity;
-import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
-import connect.qick.domain.user.exception.UserException;
-import connect.qick.domain.user.exception.UserStatusCode;
-import connect.qick.domain.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
-@Service
-@RequiredArgsConstructor
-public class UserService {
+public interface UserService {
 
-    private final UserRepository userRepository;
+    boolean checkGoogleId(String googleId);
 
-    public boolean checkGoogleId(String googleId) {
-        return userRepository.existsByGoogleId(googleId);
-    }
+    UserEntity getUserByGoogleId(String googleId);
+    UserEntity getAuthenticatedUserByGoogleId(String googleId);
 
-    public Optional<UserEntity> getUserByGoogleId(String googleId) {
-        return userRepository.findByGoogleId(googleId);
-    }
+    Optional<UserEntity> getUser(String googleId);
 
-    public UserResponse getUserInfo(String googleId) {
-        return UserResponse.from(
-                getUserByGoogleId(googleId)
-                    .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND))
-        );
-    }
+    UserResponse getUserInfo(String googleId);
 
-    public UserEntity getUserByUserId(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-    }
+    UserEntity getUserByUserId(Long userId);
 
     @Transactional
-    public void signupStudent(String googleId, SignupStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-        if(user.getUserStatus() == UserStatus.ACTIVE ) {
-            throw new AuthException(AuthStatusCode.ALREADY_EXISTS);
-        }
-        user.updateUserProfile(request);
-        user.setUserType(UserType.STUDENT);
-        user.setUserStatus(UserStatus.ACTIVE);
-        //TODO: blacklist 추가
-    }
+    SignupResponse signupStudent(String googleId, SignupStudentRequest request);
 
     @Transactional
-    public UserResponse updateStudent(String googleId, UpdateStudentRequest request) {
-        UserEntity user = getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-        user.updateUserProfile(request);
-        return UserResponse.from(user);
-    }
-
-    public UserEntity saveUser(UserEntity user) {
-        return userRepository.save(user);
-    }
+    SignupResponse signupTeacher(String googleId, SignupTeacherRequest request);
 
     @Transactional
-    public void deleteUser(String googleId) {
-        if (!userRepository.existsByGoogleId(googleId)) {
-            throw new UserException(UserStatusCode.NOT_FOUND);
-        }
-        userRepository.deleteByGoogleId(googleId);
-    }
+    UserResponse updateStudent(String googleId, UpdateStudentRequest request);
+
+    UserEntity saveUser(UserEntity user);
+
+    @Transactional
+    void deleteUser(String googleId);
+
+    @Transactional
+    void updateFcmToken(String googleId, String fcmToken);
+
+    boolean isValidFcmToken(String fcmToken);
+
+    List<UserEntity> getUsersByUserType(UserType userType);
+
+    List<UserRankingResponse> getTopUsersByPoints(int limit);
 }

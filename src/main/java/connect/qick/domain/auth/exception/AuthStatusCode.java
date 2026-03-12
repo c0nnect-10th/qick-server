@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum AuthStatusCode implements StatusCode {
   INVALID_JWT("INVALID_JWT", "유효하지 않은 JWT입니다.", HttpStatus.UNAUTHORIZED),
   EXPIRED_TOKEN("EXPIRED_TOKEN", "JWT가 만료되었습니다.", HttpStatus.UNAUTHORIZED),
+  TOKEN_BLACKLISTED("TOKEN_BLACKLISTED", "해당 토큰은 차단된 상태입니다.", HttpStatus.UNAUTHORIZED),
   INVALID_TOKEN_TYPE("INVALID_TOKEN_TYPE", "잘못된 JWT 토큰입니다.", HttpStatus.UNAUTHORIZED),
   INVALID_ID_TOKEN("INVALID_ID_TOKEN", "잘못된 Id Token 입니다.", HttpStatus.UNAUTHORIZED),
   INVALID_CREDENTIALS("INVALID_CREDENTIALS", "아이디 또는 비밀번호가 일치하지 않습니다.", HttpStatus.UNAUTHORIZED),
@@ -21,6 +22,9 @@ public enum AuthStatusCode implements StatusCode {
 
   UNAUTHORIZED("UNAUTHORIZED", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
   ACCESS_DENIED("ACCESS_DENIED", "접근 권한이 없습니다.",  HttpStatus.FORBIDDEN),
+  REQUIRE_SIGNUP_COMPLETION("REQUIRE_SIGNUP_COMPLETION", "회원가입을 완료한 사용자만 접근할 수 있습니다.",  HttpStatus.FORBIDDEN),
+  ACCESS_ONLY_STUDENT("ACCESS_ONLY_STUDENT", "학생만 접근이 가능합니다.",  HttpStatus.FORBIDDEN),
+  ACCESS_ONLY_TEACHER("ACCESS_ONLY_TEACHER", "선생님만 접근이 가능합니다.",  HttpStatus.FORBIDDEN),
 
   ;
 

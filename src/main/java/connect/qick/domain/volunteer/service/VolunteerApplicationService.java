@@ -1,18 +1,18 @@
 package connect.qick.domain.volunteer.service;
 
 import connect.qick.domain.user.entity.UserEntity;
-import connect.qick.domain.user.exception.UserException;
-import connect.qick.domain.user.exception.UserStatusCode;
 import connect.qick.domain.user.service.UserService;
 import connect.qick.domain.volunteer.dto.response.ApplicationResponse;
 import connect.qick.domain.volunteer.dto.response.MyApplicationResponse;
 import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
 import connect.qick.domain.volunteer.enums.ApplicationStatus;
+import connect.qick.domain.volunteer.enums.WorkStatus;
 import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
+import connect.qick.global.util.PushAlarmUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,22 +22,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class VolunteerApplicationService {
 
     private final VolunteerApplicationRepository applicationRepository;
     private final VolunteerWorkRepository volunteerWorkRepository;
     private final UserService userService;
+    private final PushAlarmUtil pushAlarmUtil;
 
-    @Transactional
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-
-        // 봉사활동 정보 조회
-        VolunteerWorkEntity work = volunteerWorkRepository.findById(workId)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+        UserEntity student = userService.getAuthenticatedUserByGoogleId(googleId);
+        VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatusForUpdate(workId, WorkStatus.RECRUITING)
+            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         // 이미 신청했는지 확인
         if (applicationRepository.existsByVolunteerWorkIdAndStudentIdAndStatus(
@@ -45,86 +43,64 @@ public class VolunteerApplicationService {
             throw new VolunteerException(VolunteerStatusCode.ALREADY_APPLIED);
         }
 
-        // 모집 인원 확인 (동시성 고려)
-        synchronized (this) {
-            long currentAppliedCount = applicationRepository.countAppliedByWorkId(workId);
-            if (currentAppliedCount >= work.getMaxParticipants()) {
-                throw new VolunteerException(VolunteerStatusCode.RECRUITMENT_FULL);
-            }
+        VolunteerApplicationEntity application = student.applyVolunteer(work);
+        VolunteerApplicationEntity savedApplication = applicationRepository.save(application);
 
-            // 신청 생성
-            VolunteerApplicationEntity application = VolunteerApplicationEntity.builder()
-                    .volunteerWork(work)
-                    .student(student)
-                    .status(ApplicationStatus.APPLIED)
-                    .appliedAt(LocalDateTime.now())
-                    .build();
-
-            applicationRepository.save(application);
-
-            // 현재 참여 인원 증가
-            work.setCurrentParticipants(work.getCurrentParticipants() + 1);
-            volunteerWorkRepository.save(work);
-
-            return ApplicationResponse.from(application);
+        // 선생님에게 푸시 알림 전송
+        UserEntity teacher = work.getTeacher();
+        if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
+            String title = "새로운 봉사활동 신청";
+            String body = String.format("%s 학생이 '%s' 봉사활동을 신청했습니다.", student.getName(), work.getWorkName());
+            pushAlarmUtil.send(teacher.getFcmToken(), title, body);
         }
+
+        return ApplicationResponse.from(savedApplication);
     }
 
-    @Transactional
+    /**
+     * 사용자(학생)가 참여한 봉사활동을 취소
+     * @param applicationId 참여한 봉사활동 내역 Id
+     * @param googleId 유저(학생)의 구글 Id
+     * @param cancelReason 취소 사유
+     */
     public void cancelApplication(Long applicationId, String googleId, String cancelReason) {
-        // 신청 내역 조회
-        VolunteerApplicationEntity application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
+        VolunteerApplicationEntity application = findById(applicationId);
+        volunteerWorkRepository.findByIdForUpdate(application.getVolunteerWork().getId())
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
-        // 본인의 신청인지 확인
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-
-        if (!application.getStudent().getId().equals(student.getId())) {
-            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
-        }
-
-        // 이미 취소되었거나 완료된 경우
-        if (application.getStatus() != ApplicationStatus.APPLIED) {
-            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
-        }
-
-        // 취소 처리
-        application.setStatus(ApplicationStatus.CANCELLED);
-        application.setCancelReason(cancelReason);
-        application.setCancelledAt(LocalDateTime.now());
-        applicationRepository.save(application);
-
-        // 현재 참여 인원 감소
-        VolunteerWorkEntity work = application.getVolunteerWork();
-        work.setCurrentParticipants(Math.max(0, work.getCurrentParticipants() - 1));
-        volunteerWorkRepository.save(work);
+        application.cancel(cancelReason, googleId);
     }
 
+    /**
+     * 사용자(학생)가 참여한 봉사활동 목록 조회
+     * @param googleId 유저(학생)의 구글 Id
+     * @return List<MyApplicationResponse>
+     */
     public List<MyApplicationResponse> getMyApplications(String googleId) {
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-
         List<VolunteerApplicationEntity> applications =
-                applicationRepository.findAllByStudentId(student.getId());
+                applicationRepository.findAllByGoogleId(googleId);
 
         return applications.stream()
                 .map(MyApplicationResponse::from)
                 .collect(Collectors.toList());
     }
 
+
+    /**
+     * 봉사활동 참여의 세부 사항
+     * @param applicationId 참여한 봉사활동 내역 Id
+     * @param googleId 사용자(학생)의 구글 Id
+     * @return ApplicationResponse
+     */
     public ApplicationResponse getApplicationDetail(Long applicationId, String googleId) {
-        VolunteerApplicationEntity application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
-
-        // 본인의 신청인지 확인
-        UserEntity student = userService.getUserByGoogleId(googleId)
-                .orElseThrow(() -> new UserException(UserStatusCode.NOT_FOUND));
-
-        if (!application.getStudent().getId().equals(student.getId())) {
-            throw new VolunteerException(VolunteerStatusCode.CANNOT_CANCEL);
-        }
+        VolunteerApplicationEntity application = findById(applicationId);
+        application.validateStudent(googleId); //TODO: applicationId, googleId 함께 조회하도록
 
         return ApplicationResponse.from(application);
+    }
+
+    public VolunteerApplicationEntity findById(Long applicationId) {
+        return applicationRepository.findById(applicationId)
+            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.APPLICATION_NOT_FOUND));
     }
 }

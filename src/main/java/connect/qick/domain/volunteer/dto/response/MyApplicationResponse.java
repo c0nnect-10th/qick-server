@@ -47,7 +47,7 @@ public class MyApplicationResponse {
                 entity.getVolunteerWork().getWorkName(),
                 entity.getVolunteerWork().getTeacher().getName(),
                 entity.getVolunteerWork().getLocation(),
-                entity.getVolunteerWork().getStart_time(),
+                entity.getVolunteerWork().getStartTime(),
                 entity.getVolunteerWork().getDifficulty(),
                 entity.getStatus(),
                 entity.getAppliedAt()

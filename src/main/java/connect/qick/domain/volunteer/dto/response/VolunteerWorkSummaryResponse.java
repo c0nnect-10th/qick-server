@@ -1,6 +1,8 @@
 package connect.qick.domain.volunteer.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.WorkDifficulty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +16,8 @@ public class VolunteerWorkSummaryResponse {
     private Long id;
     @Schema(description = "심부름 이름", example = "점심시간 교실 정리")
     private String workName;
+    @Schema(description = "심부름 난이도", example = "EASY")
+    private WorkDifficulty difficulty;
     @Schema(description = "심부름 수행 장소", example = "1-1 교실")
     private String location;
     @Schema(description = "담당 선생님 이름", example = "김선생")
@@ -22,4 +26,19 @@ public class VolunteerWorkSummaryResponse {
     private int maxParticipants;
     @Schema(description = "현재 참여 인원", example = "2")
     private int currentParticipants;
+    @Schema(description = "참여 여부", example = "false")
+    private boolean isParticipate;
+
+    public static VolunteerWorkSummaryResponse from(VolunteerWorkEntity entity) {
+        return new VolunteerWorkSummaryResponse(
+                entity.getId(),
+                entity.getWorkName(),
+                entity.getDifficulty(),
+                entity.getLocation(),
+                entity.getTeacher().getName(),
+                entity.getMaxParticipants(),
+                entity.getCurrentParticipants(),
+                false
+        );
+    }
 }

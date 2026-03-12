@@ -1,20 +1,25 @@
 package connect.qick.domain.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import connect.qick.domain.auth.exception.AuthException;
+import connect.qick.domain.auth.exception.AuthStatusCode;
 import connect.qick.domain.user.dto.request.SignupStudentRequest;
 import connect.qick.domain.user.dto.request.UpdateStudentRequest;
 import connect.qick.domain.user.enums.UserStatus;
 import connect.qick.domain.user.enums.UserType;
 import connect.qick.domain.user.exception.UserException;
 import connect.qick.domain.user.exception.UserStatusCode;
+import connect.qick.domain.volunteer.entity.VolunteerApplicationEntity;
 import connect.qick.domain.volunteer.entity.VolunteerWorkEntity;
+import connect.qick.domain.volunteer.enums.ApplicationStatus;
 import connect.qick.global.entity.Base;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users")
@@ -32,28 +37,36 @@ public class UserEntity extends Base {
     private String email;
 
     @Column
+    private String fcmToken;
+
+    @Column
     private String name;
+
+    @Column
+    private String profileImageUrl;
 
     @Enumerated(value = EnumType.STRING)
     @Column(name = "user_type", nullable = false)
+    @Builder.Default
     private UserType userType = UserType.USER;
 
     @JsonIgnore
     @Enumerated(value = EnumType.STRING)
     @Column(name = "user_status", nullable = false)
+    @Builder.Default
     private UserStatus userStatus = UserStatus.TEMP;
 
     @Column(unique = true)
     private String teacherCode;
 
     @Column
-    private int grade;
+    private Integer grade;
 
     @Column(name = "class")
-    private int classNumber;
+    private Integer classNumber;
 
     @Column
-    private int number;
+    private Integer number;
 
     @Column
     private int totalPoints;
@@ -61,32 +74,106 @@ public class UserEntity extends Base {
     @Column
     private int totalCount;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy="teacher")
+    @OneToMany(
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            mappedBy="teacher"
+    )
+    @Builder.Default
     private List<VolunteerWorkEntity> volunteerWorks = new ArrayList<>();
 
-    public void updateUserProfile(UpdateStudentRequest request) {
-        if (request.name() != null) this.name = request.name();
-        if (request.classroom() != null) {
-            String classroom = request.classroom();
-            if (classroom.startsWith("0") || classroom.length() != 4) {
-                throw new UserException(UserStatusCode.INVALID_CLASSROOM);
-            }
-            this.grade = Integer.parseInt(classroom.substring(0, 1));
-            this.classNumber = Integer.parseInt(classroom.substring(1, 2));
-            this.number = Integer.parseInt(classroom.substring(2));
+    //==비즈니스 로직==//
+    public void checkGoogleId(String googleId) {
+        if (!Objects.equals(this.googleId, googleId)) {
+            throw new AuthException(AuthStatusCode.ACCESS_DENIED);
         }
     }
-    public void updateUserProfile(SignupStudentRequest request) {
-        this.name = request.name();
-        String classroom = request.classroom();
+
+    public void checkIsTeacher() {
+        if (userType != UserType.TEACHER) {
+            throw new  AuthException(AuthStatusCode.ACCESS_ONLY_TEACHER);
+        }
+    }
+
+    public void checkIsStudent() {
+        if (userType != UserType.STUDENT) {
+            throw new  AuthException(AuthStatusCode.ACCESS_ONLY_STUDENT);
+        }
+    }
+
+    public String getClassroom() {
+        return "" + grade + classNumber + number;
+    }
+
+    public void setClassroom(String classroom) {
         if (classroom.startsWith("0") || classroom.length() != 4) {
             throw new UserException(UserStatusCode.INVALID_CLASSROOM);
         }
+        grade = Integer.parseInt(classroom.substring(0, 1));
+        classNumber = Integer.parseInt(classroom.substring(1, 2));
+        number = Integer.parseInt(classroom.substring(2));
+    }
+
+    public void updateUserProfile(UpdateStudentRequest request) {
+        if (request.name() != null) this.name = request.name();
+        if (request.classroom() != null) setClassroom(request.classroom());
+    }
+    public void signupStudent(SignupStudentRequest request) {
+        String classroom = request.classroom();
+        checkClassroom(classroom);
+
+        this.name = request.name();
+        this.userType = UserType.STUDENT;
+        this.userStatus = UserStatus.ACTIVE;
         this.grade = Integer.parseInt(classroom.substring(0, 1));
         this.classNumber = Integer.parseInt(classroom.substring(1, 2));
         this.number = Integer.parseInt(classroom.substring(2));
+        setClassroom(request.classroom());
+    }
+
+    public void signupTeacher(String name, String teacherCode) {
+        this.name = name;
+        this.teacherCode = teacherCode;
+        this.userType = UserType.TEACHER;
+        this.userStatus = UserStatus.ACTIVE;
+    }
+
+    public void softDelete() {
+        this.userStatus = UserStatus.DELETED;
+        this.userType = UserType.USER;
+        this.googleId = null;
+        this.email = null;
+        this.teacherCode = null;
+        this.fcmToken = null;
+        this.profileImageUrl = null;
+        this.name = "탈퇴한 사용자";
+        this.grade = null;
+        this.classNumber = null;
+        this.number = null;
+        this.totalPoints = 0;
+        this.totalCount = 0;
+    }
+
+
+    public VolunteerApplicationEntity applyVolunteer(VolunteerWorkEntity work) {
+        checkIsStudent();
+        work.validateApplication();
+        VolunteerApplicationEntity application = VolunteerApplicationEntity.builder()
+            .volunteerWork(work)
+            .status(ApplicationStatus.APPLIED)
+            .appliedAt(LocalDateTime.now())
+            .build();
+
+        application.setStudent(this);
+        work.addApplication(application);
+
+        return application;
+    }
+
+    private void checkClassroom(String classroom) {
+        if (classroom.length() != 4 || classroom.startsWith("0")) {
+            throw new UserException(UserStatusCode.INVALID_CLASSROOM);
+        }
     }
 
 }
-
-

@@ -14,6 +14,8 @@ public class UserResponse {
     String name;
     @Schema(description = "이메일", example = "gildong@qick.com")
     String email;
+    @Schema(description = "프로필 이미지 URL", example = "https://lh3.googleusercontent.com/a/...")
+    String profileImageUrl;
     @Schema(description = "누적 봉사 점수 (학생 전용)", example = "15")
     Integer totalPoints;
 //    Integer ranking;
@@ -30,6 +32,7 @@ public class UserResponse {
         UserResponse response = new UserResponse();
         response.name = user.getName();
         response.email = user.getEmail();
+        response.profileImageUrl = user.getProfileImageUrl();
         if (user.getUserType() == UserType.STUDENT) {
             response.totalPoints = user.getTotalPoints();
             response.totalCount = user.getTotalCount();
