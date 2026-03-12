@@ -1,14 +1,6 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
-
   flyway:
     enabled: false
-
-  application:
-    name: qick
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   datasource:
     url: ${DB_URL:?DB_URL missing}
@@ -18,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:

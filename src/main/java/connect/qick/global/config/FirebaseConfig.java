@@ -9,31 +9,35 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Base64;
 
 @Slf4j
 @Configuration
 public class FirebaseConfig {
 
-    @Value("${firebase.service-account-key}")
-    private String serviceAccountKeyPath;
+    @Value("${firebase.service-account-json}")
+    private String serviceAccountJson;
 
     @PostConstruct
     public void init() throws IOException {
-        try (InputStream serviceAccount = new ClassPathResource(serviceAccountKeyPath).getInputStream()) {
+        try {
+            byte[] decoded = Base64.getDecoder().decode(serviceAccountJson.trim());
+            GoogleCredentials credentials = GoogleCredentials.fromStream(new ByteArrayInputStream(decoded));
             FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                    .setCredentials(credentials)
                     .build();
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
             }
-        } catch (IOException e) {
-            log.error("Error initializing Firebase: " + e.getMessage());
-            throw new IOException("Failed to initialize Firebase with provided service account key.", e);
+
+            log.info("Firebase app has been initialized");
+        } catch (Exception e) {
+            log.error("Error initializing Firebase: {}", e.getMessage());
+            throw new IOException("Failed to initialize Firebase.", e);
         }
     }
 
