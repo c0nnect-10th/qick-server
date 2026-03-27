@@ -48,4 +48,7 @@ public class CustomUserDetails implements UserDetails {
         return userEntity.getEmail();
     }
 
+    public UserEntity getUserEntity() {
+        return userEntity;
+    }
 }

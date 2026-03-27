@@ -63,10 +63,10 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
     WHERE w.status IN (connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING, connect.qick.domain.volunteer.enums.WorkStatus.ONGOING)
     ORDER BY
         (CASE
-            WHEN a.id IS NOT NULL AND w.status = 'ONGOING' THEN 4
-            WHEN a.id IS NOT NULL AND w.status = 'RECRUITING' THEN 3
-            WHEN a.id IS NULL AND w.status = 'RECRUITING' THEN 2
-            WHEN a.id IS NULL AND w.status = 'ONGOING' THEN 1
+            WHEN a.id IS NOT NULL AND w.status = connect.qick.domain.volunteer.enums.WorkStatus.ONGOING THEN 4
+            WHEN a.id IS NOT NULL AND w.status = connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING THEN 3
+            WHEN a.id IS NULL AND w.status = connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING THEN 2
+            WHEN a.id IS NULL AND w.status = connect.qick.domain.volunteer.enums.WorkStatus.ONGOING THEN 1
         END) DESC,
         w.createdAt desc
     """)
@@ -97,7 +97,7 @@ public interface VolunteerWorkRepository extends JpaRepository<VolunteerWorkEnti
         WHERE w.teacher.id = :teacherId
         AND w.status in (connect.qick.domain.volunteer.enums.WorkStatus.ONGOING, connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING)
         ORDER BY
-        CASE WHEN w.status = 'ONGOING' THEN 1 WHEN w.status = 'RECRUITING' THEN 0 END,
+        CASE WHEN w.status = connect.qick.domain.volunteer.enums.WorkStatus.ONGOING THEN 1 WHEN w.status = connect.qick.domain.volunteer.enums.WorkStatus.RECRUITING THEN 0 END,
         w.createdAt DESC
     """)
     List<VolunteerWorkEntity> findAllOrderByStatus(Long teacherId);

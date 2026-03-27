@@ -12,12 +12,11 @@ import connect.qick.domain.volunteer.exception.VolunteerException;
 import connect.qick.domain.volunteer.exception.VolunteerStatusCode;
 import connect.qick.domain.volunteer.repository.VolunteerApplicationRepository;
 import connect.qick.domain.volunteer.repository.VolunteerWorkRepository;
-import connect.qick.global.util.PushAlarmUtil;
+import connect.qick.domain.notification.service.NotificationService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,13 +28,13 @@ public class VolunteerApplicationService {
     private final VolunteerApplicationRepository applicationRepository;
     private final VolunteerWorkRepository volunteerWorkRepository;
     private final UserService userService;
-    private final PushAlarmUtil pushAlarmUtil;
+    private final NotificationService notificationService;
 
     public ApplicationResponse applyToVolunteer(Long workId, String googleId) {
         // 학생 정보 조회
         UserEntity student = userService.getAuthenticatedUserByGoogleId(googleId);
         VolunteerWorkEntity work = volunteerWorkRepository.findByIdAndStatusForUpdate(workId, WorkStatus.RECRUITING)
-            .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
+                .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         // 이미 신청했는지 확인
         if (applicationRepository.existsByVolunteerWorkIdAndStudentIdAndStatus(
@@ -46,12 +45,12 @@ public class VolunteerApplicationService {
         VolunteerApplicationEntity application = student.applyVolunteer(work);
         VolunteerApplicationEntity savedApplication = applicationRepository.save(application);
 
-        // 선생님에게 푸시 알림 전송
+        // 선생님에게 푸시 알림 전송 및 알림 내역 저장
         UserEntity teacher = work.getTeacher();
-        if (teacher != null && teacher.getFcmToken() != null && !teacher.getFcmToken().isEmpty()) {
-            String title = "새로운 봉사활동 신청";
-            String body = String.format("%s 학생이 '%s' 봉사활동을 신청했습니다.", student.getName(), work.getWorkName());
-            pushAlarmUtil.send(teacher.getFcmToken(), title, body);
+        if (teacher != null) {
+            String title = String.format("%s", work.getWorkName());
+            String body = String.format("%s 학생이 모집에 응했습니다.", student.getName());
+            notificationService.createAndSendNotification(teacher, title, body);
         }
 
         return ApplicationResponse.from(savedApplication);
@@ -69,6 +68,15 @@ public class VolunteerApplicationService {
                 .orElseThrow(() -> new VolunteerException(VolunteerStatusCode.WORK_NOT_FOUND));
 
         application.cancel(cancelReason, googleId);
+
+        // 선생님에게 푸시 알림 전송 및 알림 내역 저장
+        UserEntity teacher = application.getVolunteerWork().getTeacher();
+        if (teacher != null) {
+            String title = String.format("%s", application.getVolunteerWork().getWorkName());
+            String body = String.format("%s 학생이 '%s'의 사유로 참여를 취소했습니다.",
+                    application.getStudent().getName(), cancelReason);
+            notificationService.createAndSendNotification(teacher, title, body);
+        }
     }
 
     /**
